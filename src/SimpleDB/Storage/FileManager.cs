@@ -1,20 +1,27 @@
+using System.IO.Abstractions;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 
 namespace SimpleDB.Storage;
 
-public sealed class FileManager
+internal sealed class FileManager : IFileManager, IDisposable
 {
-    private readonly DirectoryInfo _dbDirectory;
+    readonly IFileSystem _fileSystem;
+
+    private readonly IDirectoryInfo _dbDirectory;
+
+    private readonly Dictionary<string, MemoryMappedFile> _openFiles = [];
 
     public int BlockSize { get; private set; }
 
     public bool IsNew { get; private set; }
 
-    public FileManager(string dbDirectory, int blocksize)
+    public FileManager(string dbDirectory, int blockSize, IFileSystem? fileSystem = null)
     {
-        BlockSize = blocksize;
-        _dbDirectory = new DirectoryInfo(dbDirectory);
+        _fileSystem = fileSystem ?? new FileSystem();
+        _dbDirectory = _fileSystem.DirectoryInfo.New(dbDirectory);
+
+        BlockSize = blockSize;
 
         IsNew = !_dbDirectory.Exists;
         if (IsNew)
@@ -33,25 +40,31 @@ public sealed class FileManager
         }
     }
 
+    /// <summary>
+    /// 指定のファイル名のブロックを追加し、初期化する。
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    /// <exception cref="SystemException"></exception>
     [MethodImpl(MethodImplOptions.Synchronized)]
     public BlockId Append(string fileName)
     {
-        var info = new FileInfo(fileName);
-        int newBlockNumber = (int)Math.Ceiling((double)info.Length / BlockSize);
-        BlockId block = new(fileName, newBlockNumber);
+        int newBlockNumber = fileName.Length;
+        var blockId = new BlockId(fileName, newBlockNumber);
         byte[] bytes = new byte[BlockSize];
         try
         {
-            using FileStream fs = File.Create(info.FullName);
-            fs.Seek(block.Number * BlockSize, SeekOrigin.Begin);
-            fs.Write(bytes, 0, bytes.Length);
+            var mmf = GetFile(blockId.FileName);
+            var steam = mmf.CreateViewStream();
+            steam.Seek(blockId.Number * BlockSize, SeekOrigin.Begin);
+            steam.Write(bytes, 0, bytes.Length);
         }
         catch (IOException e)
         {
             throw new SystemException(e.Message);
         }
 
-        return block;
+        return blockId;
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
@@ -59,11 +72,13 @@ public sealed class FileManager
     {
         try
         {
-            using MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(blockId.FileName, FileMode.OpenOrCreate);
-            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(blockId.Number * BlockSize, page.Contents().Length);
+            var mmf = GetFile(blockId.FileName);
+            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
+                blockId.Number * BlockSize,
+                page.Contents().Length
+            );
             accessor.ReadArray(0, page.Contents(), 0, page.Contents().Length);
         }
-        // TODO: このエラーハンドリングが正しいか確認する。意味がない。
         catch (IOException e)
         {
             throw new SystemException(e.Message);
@@ -75,11 +90,16 @@ public sealed class FileManager
     {
         try
         {
-            using MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(blockId.FileName, FileMode.OpenOrCreate);
-            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(blockId.Number * BlockSize, page.Contents().Length);
+            using MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(
+                blockId.FileName,
+                FileMode.OpenOrCreate
+            );
+            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
+                blockId.Number * BlockSize,
+                page.Contents().Length
+            );
             accessor.WriteArray(0, page.Contents(), 0, page.Contents().Length);
         }
-        // TODO: このエラーハンドリングが正しいか確認する。意味がない。
         catch (IOException e)
         {
             throw new SystemException(e.Message);
@@ -91,4 +111,26 @@ public sealed class FileManager
         throw new NotImplementedException();
     }
 
+    private MemoryMappedFile GetFile(string filename)
+    {
+        IFileInfo f = _fileSystem.FileInfo.New(filename);
+        using var handle = File.OpenHandle("test.txt", access: FileAccess.ReadWrite);
+
+        if (f.Exists)
+        {
+            return MemoryMappedFile.CreateFromFile(f.FullName);
+        }
+
+        var file = MemoryMappedFile.CreateFromFile(f.FullName);
+        _openFiles.Add(filename, file);
+        return file;
+    }
+
+    public void Dispose()
+    {
+        foreach (var pair in _openFiles)
+        {
+            pair.Value.Dispose();
+        }
+    }
 }
