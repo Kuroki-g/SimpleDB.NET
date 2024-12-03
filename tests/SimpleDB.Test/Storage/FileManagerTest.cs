@@ -30,17 +30,55 @@ public class FileManagerTest
         Assert.True(manager.IsNew);
     }
 
+    /// <summary>
+    /// TODO: 統合テストのため移動したい。
+    /// </summary>
     [Fact]
     public void Append_new_block()
     {
-        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { });
-        var blockSize = 100;
-        var manager = new FileManager(@"./mock", blockSize, fileSystem);
+        var dbDirectory = @"./mock";
+        string fileName = "test-file.blk";
+        CleanUp(dbDirectory, fileName);
 
-        var actual = manager.Append("new-block");
+        var blockSize = 400;
+        var manager = new FileManager(dbDirectory, blockSize);
 
-        Assert.Equal("new-block", actual.FileName);
-        Assert.Equal(blockSize, actual.Number);
+        var actual = manager.Append(fileName);
+
+        Assert.Equal(fileName, actual.FileName);
+
+        CleanUp(dbDirectory, fileName);
+    }
+
+    /// <summary>
+    /// TODO: 統合テストのため移動したい。
+    /// </summary>
+    [Fact]
+    public void Write_new_block()
+    {
+        var dbDirectory = @"./mock";
+        string fileName = "test-file.blk";
+        CleanUp(dbDirectory, fileName);
+        var blockSize = 400;
+        var fm = new FileManager(dbDirectory, blockSize);
+
+        var blockId = new BlockId(fileName, 2);
+        var pageToWrite = new Page(fm.BlockSize);
+        int initialPos = 0xA0;
+        var str = "abcdefghijklm";
+        pageToWrite.SetString(initialPos, str);
+        int size = Page.MaxLength(str.Length);
+        int pos2 = initialPos + size;
+        pageToWrite.SetInt(pos2, 345);
+
+        fm.Write(blockId, pageToWrite);
+        var pageToRead = new Page(fm.BlockSize);
+        fm.Read(blockId, pageToRead);
+
+        Assert.Equal(str, pageToRead.GetString(initialPos));
+        Assert.Equal(345, pageToRead.GetInt(pos2));
+
+        CleanUp(dbDirectory, fileName);
     }
 
     [Fact]
@@ -53,5 +91,13 @@ public class FileManagerTest
         var actual = Record.Exception(() => manager.Read(blockId, new Page([])));
 
         Assert.IsType<SystemException>(actual);
+    }
+
+    private static void CleanUp(string dbDirectory, string fileName)
+    {
+        // Clean up
+        var info = new FileInfo(Path.Combine(dbDirectory, fileName));
+        if (info.Exists)
+            info.Delete();
     }
 }

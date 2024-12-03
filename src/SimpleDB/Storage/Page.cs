@@ -1,4 +1,5 @@
 using System.Text;
+using Common;
 
 namespace SimpleDB.Storage;
 
@@ -20,9 +21,9 @@ public sealed class Page : IDisposable
     /// <param name="blockSize"></param>
     public Page(int blockSize)
     {
-        _stream = new MemoryStream(blockSize);
-        _writer = new BinaryWriter(_stream);
-        _reader = new BinaryReader(_stream);
+        _stream = new MemoryStream(new byte[blockSize]);
+        _writer = new BinaryWriter(_stream, CHARSET);
+        _reader = new BinaryReader(_stream, CHARSET);
     }
 
     /// <summary>
@@ -66,7 +67,9 @@ public sealed class Page : IDisposable
     public byte[] GetBytes(int offset)
     {
         _stream.Seek(offset, SeekOrigin.Begin);
-        return _stream.GetBuffer();
+        int length = _reader.ReadInt32();
+        var bytes = _reader.ReadBytes(length);
+        return bytes;
     }
 
     /// <summary>
@@ -78,6 +81,7 @@ public sealed class Page : IDisposable
     public void SetBytes(int offset, byte[] bytes)
     {
         _stream.Position = offset;
+        _writer.Write(bytes.Length);
         _writer.Write(bytes);
     }
 
@@ -95,20 +99,36 @@ public sealed class Page : IDisposable
 
     /// <summary>
     /// WARNING: C#の実装ではGetMaxByteCountは文字数に比例しない。なので概算になる。
-    /// <see href="https://learn.microsoft.com/ja-jp/dotnet/api/system.text.encoding.getmaxbytecount?view=net-8.0"/> 
+    /// <see href="https://learn.microsoft.com/ja-jp/dotnet/api/system.text.encoding.getmaxbytecount?view=net-8.0"/>
     /// </summary>
     /// <param name="strlen"></param>
     /// <returns></returns>
     public static int MaxLength(int strlen)
     {
         var bytesPerChar = CHARSET.GetMaxByteCount(1);
-        return sizeof(int) + strlen * bytesPerChar;
+        return Bytes.Integer + strlen * bytesPerChar;
     }
 
+    /// <summary>
+    /// 元々の実装はByteBufferをcontents()で取得出来ていた。
+    /// そのまま参照を渡すのは問題があるので書き込むようにしている。
+    /// </summary>
+    /// <param name="buffer">RandomAccess.Readで取得した配列</param>
+    internal void SetContents(Span<byte> buffer)
+    {
+        _stream.Seek(0, SeekOrigin.Begin);
+        _stream.Write(buffer);
+    }
+
+    /// <summary>
+    /// bufferの中身を取得する。
+    /// </summary>
+    /// <see href="https://learn.microsoft.com/ja-jp/dotnet/api/system.io.memorystream.-ctor?view=net-9.0"/>
+    /// <returns></returns>
     internal byte[] Contents()
     {
         _stream.Seek(0, SeekOrigin.Begin);
-        return _stream.GetBuffer();
+        return _stream.ToArray();
     }
 
     public void Dispose()

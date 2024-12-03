@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
-using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace SimpleDB.Storage;
 
@@ -10,7 +10,7 @@ internal sealed class FileManager : IFileManager, IDisposable
 
     private readonly IDirectoryInfo _dbDirectory;
 
-    private readonly Dictionary<string, MemoryMappedFile> _openFiles = [];
+    private readonly Dictionary<string, SafeFileHandle> _openFiles = [];
 
     public int BlockSize { get; private set; }
 
@@ -49,15 +49,13 @@ internal sealed class FileManager : IFileManager, IDisposable
     [MethodImpl(MethodImplOptions.Synchronized)]
     public BlockId Append(string fileName)
     {
-        int newBlockNumber = fileName.Length;
+        int newBlockNumber = Length(fileName);
         var blockId = new BlockId(fileName, newBlockNumber);
         byte[] bytes = new byte[BlockSize];
         try
         {
-            var mmf = GetFile(blockId.FileName);
-            var steam = mmf.CreateViewStream();
-            steam.Seek(blockId.Number * BlockSize, SeekOrigin.Begin);
-            steam.Write(bytes, 0, bytes.Length);
+            var handle = GetFile(blockId.FileName);
+            RandomAccess.Write(handle, new byte[bytes.Length], blockId.Number * BlockSize);
         }
         catch (IOException e)
         {
@@ -72,12 +70,11 @@ internal sealed class FileManager : IFileManager, IDisposable
     {
         try
         {
-            var mmf = GetFile(blockId.FileName);
-            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
-                blockId.Number * BlockSize,
-                page.Contents().Length
-            );
-            accessor.ReadArray(0, page.Contents(), 0, page.Contents().Length);
+            var handle = GetFile(blockId.FileName);
+            var bytes = new byte[RandomAccess.GetLength(handle) - blockId.Number * BlockSize];
+            var buffer = new Span<byte>(bytes);
+            RandomAccess.Read(handle, buffer, blockId.Number * BlockSize);
+            page.SetContents(buffer);
         }
         catch (IOException e)
         {
@@ -90,15 +87,8 @@ internal sealed class FileManager : IFileManager, IDisposable
     {
         try
         {
-            using MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(
-                blockId.FileName,
-                FileMode.OpenOrCreate
-            );
-            using MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
-                blockId.Number * BlockSize,
-                page.Contents().Length
-            );
-            accessor.WriteArray(0, page.Contents(), 0, page.Contents().Length);
+            var handle = GetFile(blockId.FileName);
+            RandomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
         }
         catch (IOException e)
         {
@@ -108,22 +98,48 @@ internal sealed class FileManager : IFileManager, IDisposable
 
     public int Length(string fileName)
     {
-        throw new NotImplementedException();
+        var handle = GetFile(fileName) ?? throw new IOException($"cannot access {fileName}");
+        return (int)(RandomAccess.GetLength(handle) / BlockSize);
     }
 
-    private MemoryMappedFile GetFile(string filename)
+    /// <summary>
+    /// Get handle or add new
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <returns></returns>
+    private SafeFileHandle GetFile(string filename)
     {
-        IFileInfo f = _fileSystem.FileInfo.New(filename);
-        using var handle = File.OpenHandle("test.txt", access: FileAccess.ReadWrite);
-
-        if (f.Exists)
+        var info = _fileSystem.FileInfo.New(
+            _fileSystem.Path.Combine(_dbDirectory.FullName, filename)
+        );
+        SafeFileHandle? handle = info.Exists ? _openFiles.GetValueOrDefault(info.FullName) : null;
+        if (handle is not null)
         {
-            return MemoryMappedFile.CreateFromFile(f.FullName);
+            return handle;
         }
+        handle = CreateFileAndOpenHandle(info, access: FileAccess.ReadWrite);
+        _openFiles.Add(info.FullName, handle);
+        return handle;
+    }
 
-        var file = MemoryMappedFile.CreateFromFile(f.FullName);
-        _openFiles.Add(filename, file);
-        return file;
+    private static SafeFileHandle CreateFileAndOpenHandle(
+        IFileInfo info,
+        FileMode mode = FileMode.Open,
+        FileAccess access = FileAccess.Read,
+        FileShare share = FileShare.Read,
+        FileOptions options = FileOptions.None,
+        long preallocationSize = 0
+    )
+    {
+        if (!Directory.Exists(info.DirectoryName))
+        {
+            throw new FileNotFoundException(
+                "cannot use this method for mock. please check you are using real file system."
+            );
+        }
+        var fs = info.Create();
+        fs.Close();
+        return File.OpenHandle(info.FullName, mode, access, share, options, preallocationSize);
     }
 
     public void Dispose()
