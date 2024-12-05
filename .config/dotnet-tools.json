@@ -13,6 +13,18 @@
       "commands": [
         "roslynator"
       ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.4.1",
+      "commands": [
+        "reportgenerator"
+      ]
+    },
+    "dotnet-coverage": {
+      "version": "17.13.1",
+      "commands": [
+        "dotnet-coverage"
+      ]
     }
   }
 }
