@@ -3,4 +3,12 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\SimpleDB\SimpleDB.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FakeItEasy" Version="8.3.0" />
+    </ItemGroup>
 </Project>

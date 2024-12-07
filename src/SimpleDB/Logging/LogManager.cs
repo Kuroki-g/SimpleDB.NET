@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
+using Common;
 using SimpleDB.Storage;
 
 namespace SimpleDB.Logging;
@@ -17,30 +18,40 @@ internal sealed class LogManager : ILogManager
     private readonly string _logFile;
     private readonly Page _logPage;
     private BlockId _currentBlock;
-    private int _latestLSN = 0;
-    private int _lastSavedLSN = 0;
 
-    public LogManager(FileManager fm, string logFile)
+    internal BlockId CurrentBlock => _currentBlock;
+
+    private int _latestLsn = 0;
+
+    private int _lastSavedLsn = 0;
+
+    /// <summary>
+    /// もしログファイルが存在しない場合には新しくログファイルを設定する。
+    /// </summary>
+    /// <param name="fm"></param>
+    /// <param name="logFile"></param>
+    public LogManager(IFileManager fm, string logFile)
     {
         _fm = fm;
         _logFile = logFile;
-        byte[] bytes = new byte[fm.BlockSize];
+        var bytes = new byte[fm.BlockSize];
         _logPage = new Page(bytes);
 
-        int logsize = fm.Length(logFile);
-        if (logsize == 0)
+        int logSize = fm.Length(logFile);
+        if (logSize == 0)
         {
             _currentBlock = AppendNewBlock();
         }
         else
         {
-            _currentBlock = new BlockId(logFile, logsize - 1);
+            _currentBlock = new BlockId(logFile, logSize - 1);
             fm.Read(_currentBlock, _logPage);
         }
     }
 
     /// <summary>
-    /// 
+    /// 与えたバイト列をページに書き込む。
+    /// ページのサイズが不足する場合には新しくブロックを追加し、それに書き込む。
     /// </summary>
     /// <param name="logRecord"></param>
     /// <returns>ログ シーケンス番号 (LSN) </returns>
@@ -49,33 +60,40 @@ internal sealed class LogManager : ILogManager
     {
         int boundary = _logPage.GetInt(0);
         int recordSize = logRecord.Length;
-        // TODO: int bytesNeeded = recordSize + Integer.BYTES;が意味不
-        int bytesNeeded = recordSize + 2;
-        // It doesn't fit
-        if (boundary - bytesNeeded < 2)
+        int bytesNeeded = recordSize + Bytes.Integer;
+        if (boundary - bytesNeeded < Bytes.Integer) // 必要なサイズに満たない場合
         {
-            Flush(); // so move to the next block.
+            Flush(); // 次のブロックに移動する。
             _currentBlock = AppendNewBlock();
             boundary = _logPage.GetInt(0);
         }
-        int recpos = boundary - bytesNeeded;
-        _logPage.SetBytes(recpos, logRecord);
-        _logPage.SetInt(0, recpos); // the new boundary
-        _latestLSN += 1;
-        return _latestLSN;
+
+        int recPos = boundary - bytesNeeded;
+
+        _logPage.SetBytes(recPos, logRecord);
+        _logPage.SetInt(0, recPos); // the new boundary
+
+        _latestLsn += 1; // ログ シーケンス番号に1追加する。
+
+        return _latestLsn;
     }
 
+    /// <summary>
+    /// 新しいブロックを追加する。
+    /// </summary>
+    /// <returns></returns>
     private BlockId AppendNewBlock()
     {
         BlockId block = _fm.Append(_logFile);
         _logPage.SetInt(0, _fm.BlockSize);
         _fm.Write(block, _logPage);
+
         return block;
     }
 
     public void Flush(int lsn)
     {
-        if (lsn >= _lastSavedLSN)
+        if (lsn >= _lastSavedLsn)
         {
             Flush();
         }
@@ -84,18 +102,14 @@ internal sealed class LogManager : ILogManager
     private void Flush()
     {
         _fm.Write(_currentBlock, _logPage);
-        _lastSavedLSN = _latestLSN;
+        _lastSavedLsn = _latestLsn;
     }
 
-    public IEnumerator GetEnumerator()
+    public IEnumerator<byte[]> GetEnumerator()
     {
         Flush();
-        return new LogIterator(_fm, _currentBlock);
+        return new LogEnumerator(_fm, _currentBlock);
     }
 
-    IEnumerator<byte[]> IEnumerable<byte[]>.GetEnumerator()
-    {
-        Flush();
-        return new LogIterator(_fm, _currentBlock);
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

@@ -12,12 +12,16 @@ internal sealed class FileManager : IFileManager, IDisposable
 
     private readonly Dictionary<string, SafeFileHandle> _openFiles = [];
 
+    internal string[] OpenedFiles => [.. _openFiles.Keys];
+
     public int BlockSize { get; private set; }
 
     public bool IsNew { get; private set; }
 
     public FileManager(string dbDirectory, int blockSize, IFileSystem? fileSystem = null)
     {
+        if (blockSize <= 0)
+            throw new InvalidOperationException("block size must be larger than zero");
         _fileSystem = fileSystem ?? new FileSystem();
         _dbDirectory = _fileSystem.DirectoryInfo.New(dbDirectory);
 
@@ -71,7 +75,7 @@ internal sealed class FileManager : IFileManager, IDisposable
         try
         {
             var handle = GetFile(blockId.FileName);
-            var bytes = new byte[RandomAccess.GetLength(handle) - blockId.Number * BlockSize];
+            var bytes = new byte[BlockSize];
             var buffer = new Span<byte>(bytes);
             RandomAccess.Read(handle, buffer, blockId.Number * BlockSize);
             page.SetContents(buffer);
@@ -112,17 +116,17 @@ internal sealed class FileManager : IFileManager, IDisposable
         var info = _fileSystem.FileInfo.New(
             _fileSystem.Path.Combine(_dbDirectory.FullName, filename)
         );
-        SafeFileHandle? handle = info.Exists ? _openFiles.GetValueOrDefault(info.FullName) : null;
+        SafeFileHandle? handle = _openFiles.GetValueOrDefault(info.FullName) ?? null;
         if (handle is not null)
         {
             return handle;
         }
-        handle = CreateFileAndOpenHandle(info, access: FileAccess.ReadWrite);
+        handle = CreateOrSelectFileAndOpenHandle(info, access: FileAccess.ReadWrite);
         _openFiles.Add(info.FullName, handle);
         return handle;
     }
 
-    private static SafeFileHandle CreateFileAndOpenHandle(
+    private static SafeFileHandle CreateOrSelectFileAndOpenHandle(
         IFileInfo info,
         FileMode mode = FileMode.Open,
         FileAccess access = FileAccess.Read,
@@ -137,7 +141,7 @@ internal sealed class FileManager : IFileManager, IDisposable
                 "cannot use this method for mock. please check you are using real file system."
             );
         }
-        var fs = info.Create();
+        var fs = info.Exists ? info.Open(FileMode.Open) : info.Create();
         fs.Close();
         return File.OpenHandle(info.FullName, mode, access, share, options, preallocationSize);
     }

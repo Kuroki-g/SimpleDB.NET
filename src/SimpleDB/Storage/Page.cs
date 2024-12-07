@@ -67,9 +67,16 @@ public sealed class Page : IDisposable
     public byte[] GetBytes(int offset)
     {
         _stream.Seek(offset, SeekOrigin.Begin);
-        int length = _reader.ReadInt32();
-        var bytes = _reader.ReadBytes(length);
-        return bytes;
+        try
+        {
+            int length = _reader.ReadInt32();
+            var bytes = _reader.ReadBytes(length);
+            return bytes;
+        }
+        catch (EndOfStreamException)
+        {
+            return [];
+        }
     }
 
     /// <summary>
@@ -118,6 +125,9 @@ public sealed class Page : IDisposable
     {
         _stream.Seek(0, SeekOrigin.Begin);
         _stream.Write(buffer);
+        // for debug
+        var contents = _stream.ToArray();
+        //
     }
 
     /// <summary>
@@ -128,7 +138,8 @@ public sealed class Page : IDisposable
     internal byte[] Contents()
     {
         _stream.Seek(0, SeekOrigin.Begin);
-        return _stream.ToArray();
+        var contents = _stream.ToArray();
+        return contents;
     }
 
     public void Dispose()

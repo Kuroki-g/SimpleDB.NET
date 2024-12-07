@@ -16,4 +16,6 @@ public interface IFileManager
 
     [MethodImpl(MethodImplOptions.Synchronized)]
     public void Write(BlockId blockId, Page page);
+
+    public int Length(string fileName);
 }

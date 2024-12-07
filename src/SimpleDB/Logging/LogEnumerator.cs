@@ -1,9 +1,10 @@
 using System.Collections;
+using Common;
 using SimpleDB.Storage;
 
 namespace SimpleDB.Logging;
 
-internal sealed class LogIterator : IEnumerator<byte[]>
+internal sealed class LogEnumerator : IEnumerator<byte[]>
 {
     private readonly IFileManager _fm;
 
@@ -13,17 +14,16 @@ internal sealed class LogIterator : IEnumerator<byte[]>
 
     private int _currentPos;
 
-    public LogIterator(IFileManager fileManager, BlockId blockId)
+    public LogEnumerator(IFileManager fm, BlockId blockId)
     {
-        _fm = fileManager;
+        _fm = fm;
         _blockId = blockId;
-        byte[] bytes = new byte[_blockId.Number];
+        var bytes = new byte[fm.BlockSize];
         _page = new Page(bytes);
-        Current = []; // ほんとうにこれでよいのか？
+        MoveToBlock(_blockId);
     }
 
-
-    public byte[] Current { get; private set; }
+    public byte[] Current => _page.GetBytes(_currentPos);
 
     object IEnumerator.Current => Current;
 
@@ -36,16 +36,15 @@ internal sealed class LogIterator : IEnumerator<byte[]>
     {
         // まずJavaのコードのhasNextを行う。falseならそのままreturnする。
         var hasNext = _currentPos < _fm.BlockSize || _blockId.Number > 0;
-        if (!hasNext) return false;
+        if (!hasNext)
+            return false;
         // next相当のコードを呼び出す。
         if (_currentPos == _fm.BlockSize)
         {
             _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1);
             MoveToBlock(_blockId);
         }
-        Current = _page.GetBytes(_currentPos);
-        // _currentPos += Integer.BYTES + Current.Length;のはず。Integer.BYTESは何なのだろう
-        _currentPos += Current.Length;
+        _currentPos += Bytes.Integer + Current.Length;
         return true;
     }
 
@@ -57,10 +56,10 @@ internal sealed class LogIterator : IEnumerator<byte[]>
     /// <summary>
     /// Moves to the specified log block and positions it at the first record in that block (i.e., the most recent one).
     /// </summary>
-    /// <param name="blk"></param>
-    private void MoveToBlock(BlockId blk)
+    /// <param name="blockId"></param>
+    private void MoveToBlock(BlockId blockId)
     {
-        _fm.Read(_blockId, _page);
+        _fm.Read(blockId, _page);
         var boundary = _page.GetInt(0);
         _currentPos = boundary;
     }
