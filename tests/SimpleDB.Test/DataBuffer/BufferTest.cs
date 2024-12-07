@@ -1,9 +1,9 @@
 using FakeItEasy;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
-using Buffer = SimpleDB.Storage.Buffer;
+using Buffer = SimpleDB.DataBuffer.Buffer;
 
-namespace SimpleDB.Test.Storage;
+namespace SimpleDB.Test.DataBuffer;
 
 public class BufferTest
 {

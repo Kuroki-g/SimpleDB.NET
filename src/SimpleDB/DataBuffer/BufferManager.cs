@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using SimpleDB.Logging;
+using SimpleDB.Storage;
 
-namespace SimpleDB.Storage;
+namespace SimpleDB.DataBuffer;
 
 public sealed class BufferManager
 {

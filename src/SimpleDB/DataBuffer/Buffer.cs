@@ -1,6 +1,7 @@
 using SimpleDB.Logging;
+using SimpleDB.Storage;
 
-namespace SimpleDB.Storage;
+namespace SimpleDB.DataBuffer;
 
 public class Buffer
 {

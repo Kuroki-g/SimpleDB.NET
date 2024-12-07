@@ -1,4 +1,4 @@
-namespace SimpleDB.Storage;
+namespace SimpleDB.DataBuffer;
 
 public class BufferAbortException : SystemException
 {
