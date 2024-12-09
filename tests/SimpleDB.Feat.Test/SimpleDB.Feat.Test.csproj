@@ -6,9 +6,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\SimpleDB\SimpleDB.csproj" />
+        <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FakeItEasy" Version="8.3.0" />
+        <PackageReference Include="FakeItEasy" Version="8.3.0" />
     </ItemGroup>
 </Project>

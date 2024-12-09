@@ -3,11 +3,11 @@ using Common;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
 
-namespace SimpleDB.Test.Logging;
+namespace TestHelper.Utils;
 
-internal class LoggingTestHelper
+public class LoggingTestHelper
 {
-    internal static ReadOnlyCollection<(string, int)> GetLogRecords(LogManager lm)
+    public static ReadOnlyCollection<(string, int)> GetLogRecords(ILogManager lm)
     {
         List<(string, int)> result = [];
         foreach (var record in lm)
@@ -25,11 +25,7 @@ internal class LoggingTestHelper
         return result.AsReadOnly();
     }
 
-    internal static ReadOnlyCollection<int> CreateSampleLogRecords(
-        LogManager lm,
-        int start,
-        int end
-    )
+    public static ReadOnlyCollection<int> CreateSampleLogRecords(ILogManager lm, int start, int end)
     {
         List<int> result = [];
         for (int i = start; i <= end; i++)

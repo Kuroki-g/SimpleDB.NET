@@ -63,4 +63,31 @@ public class BufferTest
         A.CallTo(() => lm.Flush(A<int>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => fm.Write(A<BlockId>._, A<Page>._)).MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public void IsPinned()
+    {
+        var fm = A.Fake<IFileManager>();
+        A.CallTo(() => fm.BlockSize).Returns(4);
+        var lm = A.Fake<ILogManager>();
+        var buffer = new Buffer(fm, lm);
+
+        var actual = buffer.IsPinned;
+
+        Assert.False(actual);
+    }
+
+    [Fact]
+    public void IsPinned_become_true()
+    {
+        var fm = A.Fake<IFileManager>();
+        A.CallTo(() => fm.BlockSize).Returns(4);
+        var lm = A.Fake<ILogManager>();
+        var buffer = new Buffer(fm, lm);
+
+        buffer.Pin();
+        var actual = buffer.IsPinned;
+
+        Assert.True(actual);
+    }
 }

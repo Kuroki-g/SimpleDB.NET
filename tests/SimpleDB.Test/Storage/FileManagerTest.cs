@@ -10,7 +10,7 @@ public class FileManagerTest
 
     public FileManagerTest()
     {
-        Helper.CleanUp(_dir);
+        Helper.InitializeDir(_dir);
     }
 
     [Fact]

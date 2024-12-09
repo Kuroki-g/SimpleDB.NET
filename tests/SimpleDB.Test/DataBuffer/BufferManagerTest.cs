@@ -15,7 +15,7 @@ public class BufferManagerTest
         var bufferCount = 3;
         var bufferManager = new BufferManager(fm, lm, bufferCount);
 
-        var actual = bufferManager.Available;
+        var actual = bufferManager.Available();
 
         Assert.Equal(bufferCount, actual);
     }
@@ -31,7 +31,7 @@ public class BufferManagerTest
         bufferManager.Pin(new BlockId("test-file", 0));
         bufferManager.Pin(new BlockId("test-file", 1));
 
-        var actual = bufferManager.Available;
+        var actual = bufferManager.Available();
 
         Assert.Equal(0, actual);
     }
@@ -63,7 +63,7 @@ public class BufferManagerTest
         var buffer0 = bufferManager.Pin(new BlockId("test-file", 0));
         bufferManager.Unpin(buffer0);
 
-        var actual = bufferManager.Available;
+        var actual = bufferManager.Available();
 
         Assert.Equal(1, actual);
     }
