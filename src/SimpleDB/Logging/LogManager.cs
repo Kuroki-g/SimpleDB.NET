@@ -7,6 +7,12 @@ namespace SimpleDB.Logging;
 
 public interface ILogManager : IEnumerable<byte[]>
 {
+    /// <summary>
+    /// 与えたバイト列をページに書き込む。
+    /// ページのサイズが不足する場合には新しくブロックを追加し、それに書き込む。
+    /// </summary>
+    /// <param name="logRecord"></param>
+    /// <returns>ログ シーケンス番号 (LSN) </returns>
     public int Append(byte[] record);
 
     public void Flush(int lsn);

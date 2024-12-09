@@ -125,9 +125,6 @@ public sealed class Page : IDisposable
     {
         _stream.Seek(0, SeekOrigin.Begin);
         _stream.Write(buffer);
-        // for debug
-        var contents = _stream.ToArray();
-        //
     }
 
     /// <summary>

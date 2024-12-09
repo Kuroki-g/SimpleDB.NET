@@ -122,7 +122,7 @@ internal sealed class FileManager : IFileManager, IDisposable
             return handle;
         }
         handle = CreateOrSelectFileAndOpenHandle(info, access: FileAccess.ReadWrite);
-        _openFiles.Add(info.FullName, handle);
+        _openFiles[info.FullName] = handle;
         return handle;
     }
 

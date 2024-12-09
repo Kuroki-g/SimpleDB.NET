@@ -5,7 +5,7 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.DataBuffer;
 
-public sealed class BufferManager
+internal sealed class BufferManager : IBufferManager
 {
     private readonly List<Buffer> _bufferPool;
 
@@ -21,12 +21,6 @@ public sealed class BufferManager
         {
             _bufferPool.Add(new Buffer(fileManager, logManager));
         }
-    }
-
-    public int Available
-    {
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        get => _availableBufferCount;
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
@@ -101,13 +95,12 @@ public sealed class BufferManager
         return buffer;
     }
 
-    private Buffer? FindExistingBuffer(BlockId blockId)
-    {
-        return _bufferPool.FirstOrDefault((buffer) => blockId.Equals(buffer?.Block));
-    }
+    private Buffer? FindExistingBuffer(BlockId blockId) =>
+        _bufferPool.FirstOrDefault((buffer) => blockId.Equals(buffer?.Block));
 
-    private Buffer? ChooseUnpinnedBuffer()
-    {
-        return _bufferPool.FirstOrDefault((buffer) => !buffer.IsPinned);
-    }
+    private Buffer? ChooseUnpinnedBuffer() =>
+        _bufferPool.FirstOrDefault((buffer) => !buffer.IsPinned);
+
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public int Available() => _availableBufferCount;
 }

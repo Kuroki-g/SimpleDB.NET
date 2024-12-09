@@ -18,9 +18,9 @@ public interface ITransaction
 
     public string GetString(BlockId blockId, int offset);
 
-    public int SetInt(BlockId blockId, int offset, int value, bool okToLog);
+    public void SetInt(BlockId blockId, int offset, int value, bool okToLog);
 
-    public int SetString(BlockId blockId, int offset, string value, bool okToLog);
+    public void SetString(BlockId blockId, int offset, string value, bool okToLog);
 
     public int AvailableBuffers();
 

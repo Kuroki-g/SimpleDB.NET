@@ -8,6 +8,11 @@ public interface IFileManager
 
     public bool IsNew { get; }
 
+    /// <summary>
+    /// 指定のファイル名のブロックを追加し、初期化する。
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.Synchronized)]
     public BlockId Append(string fileName);
 

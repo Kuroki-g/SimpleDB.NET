@@ -1,4 +1,4 @@
-using Buffer = SimpleDB.Storage.Buffer;
+using Buffer = SimpleDB.DataBuffer.Buffer;
 
 namespace SimpleDB.Tx.Recovery;
 
@@ -8,7 +8,7 @@ public interface IRecoveryManager
 
     public void Rollback();
 
-    public void Recovery();
+    public void Recover();
 
     public int SetInt(Buffer buffer, int offset, int newValue);
 

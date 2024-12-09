@@ -1,3 +1,5 @@
+using Buffer = SimpleDB.DataBuffer.Buffer;
+
 namespace SimpleDB.Storage;
 
 public interface IBufferManager
