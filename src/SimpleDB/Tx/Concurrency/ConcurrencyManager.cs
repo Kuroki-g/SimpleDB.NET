@@ -10,7 +10,7 @@ public class ConcurrencyManager : IConcurrencyManager
 
     public void SharedLock(BlockId blockId)
     {
-        if (_locks.GetValueOrDefault(blockId) == LockType.NONE)
+        if (GetLockType(blockId) == LockType.NONE)
         {
             _lockTable.SharedLock(blockId);
             _locks[blockId] = LockType.SHARED;
@@ -36,6 +36,13 @@ public class ConcurrencyManager : IConcurrencyManager
         _locks.Clear();
     }
 
+    /// <summary>
+    /// 指定のブロックのロックの状態を獲得する。
+    /// </summary>
+    /// <param name="blockId"></param>
+    /// <returns><see cref="LockType" /></returns>
+    internal LockType GetLockType(BlockId blockId) => _locks.GetValueOrDefault(blockId);
+
     private bool HasExclusiveLock(BlockId blockId) =>
-        _locks.GetValueOrDefault(blockId).Equals(LockType.EXCLUSIVE);
+        GetLockType(blockId).Equals(LockType.EXCLUSIVE);
 }

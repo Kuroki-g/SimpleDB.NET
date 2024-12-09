@@ -7,7 +7,7 @@ namespace SimpleDB.Tx.Concurrency;
 /// <summary>
 /// TODO: 静的にインスタンスを保持する。スレッドセーフな実装をしなくてはいけない。
 /// </summary>
-public sealed class LockTable : ILockTable
+public sealed class LockTable
 {
     /// <summary>
     /// Execution max time (millisecond)

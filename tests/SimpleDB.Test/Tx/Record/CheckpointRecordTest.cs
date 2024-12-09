@@ -1,6 +1,5 @@
 using FakeItEasy;
 using SimpleDB.Logging;
-using SimpleDB.Storage;
 using SimpleDB.Tx.Recovery.LogRecord;
 
 namespace SimpleDB.Test.Tx.Record;
