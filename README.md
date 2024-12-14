@@ -2,6 +2,24 @@
 
 SimpleDB implementation using .NET
 
+## Status
+
+- [X] 1 Database
+- [X] 2 JDBC
+- [X] 3 Disk and File Management
+- [X] 4 Memory Management
+- [X] 5 Transaction Management
+- [X] 6 Record Management
+- [ ] 7 Metadata Management
+- [ ] 8 Query Processing
+- [ ] 9 Parsing
+- [ ] 10 Planning
+- [ ] 11 JDBC Interfaces
+- [ ] 12 Indexing
+- [ ] 13 Materialization and Sorting
+- [ ] 14 Effective Buffer Utilization
+- [ ] 15 Query Optimization
+
 ## License
 
 This is originally, SimpleDB from Database Design and Implementation, 2nd edition by Edward Sciore
