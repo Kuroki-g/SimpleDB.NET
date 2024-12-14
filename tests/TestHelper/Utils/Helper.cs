@@ -30,21 +30,28 @@ public static class Helper
     /// </summary>
     /// <param name="dbDirectory"></param>
     /// <param name="fileName"></param>
-    public static void InitializeDir(string dbDirectory)
+    public static void InitializeDir(DirectoryInfo directoryInfo)
     {
-        var dir = new DirectoryInfo(dbDirectory);
-        if (!dir.Exists)
+        if (!directoryInfo.Exists)
         {
-            dir.Create();
+            directoryInfo.Create();
             return;
         }
 
         // Clean up
-        foreach (var info in dir.GetFiles())
+        foreach (var info in directoryInfo.GetFiles())
         {
             info.Delete();
         }
     }
+
+    /// <summary>
+    /// Create or clean up target directory.
+    /// </summary>
+    /// <param name="dbDirectory"></param>
+    /// <param name="fileName"></param>
+    public static void InitializeDir(string dbDirectory) =>
+        InitializeDir(new DirectoryInfo(dbDirectory));
 
     /// <summary>
     /// Clean up target directory.
