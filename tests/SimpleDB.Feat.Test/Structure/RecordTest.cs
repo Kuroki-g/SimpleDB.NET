@@ -1,10 +1,5 @@
-using Microsoft.VisualBasic;
-using SimpleDB.DataBuffer;
 using SimpleDB.Feat.Test.Tx;
-using SimpleDB.Logging;
-using SimpleDB.Storage;
 using SimpleDB.Structure;
-using Transaction = SimpleDB.Tx.Transaction;
 
 namespace SimpleDB.Feat.Test.Structure;
 
@@ -13,11 +8,7 @@ public class RecordTest : IntegrationTestBase
     [Fact]
     public void RecordTest1()
     {
-        var fm = new FileManager(_dir, 400);
-        var lm = new LogManager(fm, "log-file");
-        var bm = new BufferManager(fm, lm, 8);
-
-        var tx = new Transaction(fm, lm, bm);
+        var tx = CreateTransaction();
 
         var schema = new Schema();
         schema.AddIntField("A");

@@ -2,7 +2,10 @@ using System.Runtime.CompilerServices;
 
 namespace SimpleDB.Storage;
 
-public interface IFileManager
+/// <summary>
+/// WARNING: implement IDisposable when you use this interface
+/// </summary>
+public interface IFileManager : IDisposable
 {
     public int BlockSize { get; }
 

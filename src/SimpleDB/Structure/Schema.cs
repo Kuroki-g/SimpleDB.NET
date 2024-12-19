@@ -4,6 +4,8 @@ using SimpleDB.Sql;
 namespace SimpleDB.Structure;
 
 /// <summary>
+/// テーブルにおけるレコードのスキーマである。
+/// 名前、型を持つ。
 /// TODO: 密結合でも問題ないとわかったらISchemaを削除する。
 /// </summary>
 internal class Schema : ISchema
@@ -48,7 +50,10 @@ internal class Schema : ISchema
 
     public bool HasField(string fieldName) => Fields.Contains(fieldName);
 
-    public int Length(string fieldName) => _info.GetValueOrDefault(fieldName)?.Length ?? default;
+    private FieldInfo GetFieldInfo(string fieldName) =>
+        _info.GetValueOrDefault(fieldName) ?? throw new InvalidDataException("not exist field");
 
-    public int Type(string fieldName) => _info.GetValueOrDefault(fieldName)?.Type ?? default;
+    public int Length(string fieldName) => GetFieldInfo(fieldName).Length;
+
+    public int Type(string fieldName) => GetFieldInfo(fieldName).Type;
 }

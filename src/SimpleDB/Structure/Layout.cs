@@ -4,12 +4,23 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.Structure;
 
+/// <summary>
+/// レコードの構造を保有するためのクラスである。
+/// </summary>
 public class Layout : ILayout
 {
+    /// <summary>
+    /// テーブルのスキーマを返す。
+    /// </summary>
     public ISchema Schema { get; }
 
     public int SlotSize { get; }
 
+    /// <summary>
+    /// 指定のフィールドのoffsetを返す。
+    /// </summary>
+    /// <param name="fieldName"></param>
+    /// <returns></returns>
     public int Offset(string fieldName) => _offsets.GetValueOrDefault(fieldName);
 
     private readonly Dictionary<string, int> _offsets = [];
@@ -21,7 +32,7 @@ public class Layout : ILayout
         foreach (var fieldName in schema.Fields)
         {
             _offsets[fieldName] = pos;
-            pos += LenghInBytes(fieldName);
+            pos += LengthInBytes(fieldName);
         }
 
         SlotSize = pos;
@@ -34,9 +45,11 @@ public class Layout : ILayout
         SlotSize = slotSize;
     }
 
-    private int LenghInBytes(string fieldName)
+    private int LengthInBytes(string fieldName)
     {
-        var fildType = Schema.Type(fieldName);
-        return fildType == Types.INTEGER ? Bytes.Integer : Page.MaxLength(Schema.Length(fieldName));
+        var fieldType = Schema.Type(fieldName);
+        return fieldType == Types.INTEGER
+            ? Bytes.Integer
+            : Page.MaxLength(Schema.Length(fieldName));
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace SimpleDB.Storage;
 
-internal sealed class FileManager : IFileManager, IDisposable
+internal sealed class FileManager : IFileManager
 {
     readonly IFileSystem _fileSystem;
 

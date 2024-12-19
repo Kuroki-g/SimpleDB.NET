@@ -7,7 +7,7 @@ using SimpleDB.Tx.Recovery;
 
 namespace SimpleDB.Tx;
 
-public class Transaction : ITransaction
+public class Transaction : ITransaction, IDisposable
 {
     private static int _nextNum = 0;
 
@@ -154,4 +154,10 @@ public class Transaction : ITransaction
     /// </summary>
     /// <param name="blockId"></param>
     public void Unpin(BlockId blockId) => _bufferBoard.Unpin(blockId);
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _fm.Dispose();
+    }
 }

@@ -1,76 +1,90 @@
+using SimpleDB.Storage;
 using SimpleDB.Tx;
 
 namespace SimpleDB.Structure;
 
+/// <summary>
+/// TODO: IEnumerableを実装したほうがよい。
+/// </summary>
 public class TableScan : ITableScan
 {
     private readonly ITransaction _tx;
 
     private readonly ILayout _layout;
 
-    private readonly IRecordPage _recordPage;
+    private IRecordPage _recordPage;
 
     private readonly string _fileName;
     private int _currentSlot;
+
+    public static string RealFileName(string tableName) => $"{tableName}.tbl";
 
     public TableScan(ITransaction tx, string tableName, ILayout layout)
     {
         _tx = tx;
         _layout = layout;
-        _fileName = $"{tableName}.tbl";
+        _fileName = RealFileName(tableName);
         if (_tx.Size(_fileName) == 0)
         {
             MoveToNewBlock();
         }
         else
         {
-            MoveToBlock();
+            MoveToBlock(0); // TODO: beforeFirstを呼ぶべきではないか？
         }
     }
 
-    public void BeforeFirst()
-    {
-        MoveToBlock(0);
-    }
+    public void BeforeFirst() => MoveToBlock(0);
 
-    private void MoveToBlock(int v)
+    private void MoveToBlock(int blockNumber)
     {
-        throw new NotImplementedException();
+        Close();
+        var blockId = new BlockId(_fileName, blockNumber);
+        _recordPage = new RecordPage(_tx, blockId, _layout);
+        _currentSlot = -1;
     }
 
     public void Close()
     {
-        throw new NotImplementedException();
+        if (_recordPage is not null)
+        {
+            _tx.Unpin(_recordPage.BlockId);
+        }
     }
 
-    public int GetInt(string fieldName)
-    {
-        throw new NotImplementedException();
-    }
+    public int GetInt(string fieldName) => _recordPage.GetInt(_currentSlot, fieldName);
 
-    public RecordId GetRecordId()
-    {
-        throw new NotImplementedException();
-    }
+    public RecordId GetRecordId() => new(_recordPage.BlockId.Number, _currentSlot);
 
-    public string GetString(string fieldName)
-    {
-        throw new NotImplementedException();
-    }
+    public string GetString(string fieldName) => _recordPage.GetString(_currentSlot, fieldName);
 
-    public bool HasField(string fieldName)
-    {
-        throw new NotImplementedException();
-    }
+    public bool HasField(string fieldName) => _layout.Schema.HasField(fieldName);
 
     public void Insert()
     {
-        throw new NotImplementedException();
+        _currentSlot = _recordPage.InsertAfter(_currentSlot);
+        while (_currentSlot < 0)
+        {
+            if (AtLastBlock())
+            {
+                MoveToNewBlock();
+            }
+            else
+            {
+                MoveToBlock(_recordPage.BlockId.Number + 1);
+            }
+            _currentSlot = _recordPage.InsertAfter(_currentSlot);
+        }
     }
+
+    public void Delete() => _recordPage.Delete(_currentSlot);
 
     public void MoveToRecordId(RecordId recordId)
     {
-        throw new NotImplementedException();
+        Close();
+        var blockId = new BlockId(_fileName, recordId.BlockNumber);
+        _recordPage = new RecordPage(_tx, blockId, _layout);
+        _currentSlot = recordId.Slot;
     }
 
     public bool Next()
@@ -86,28 +100,21 @@ public class TableScan : ITableScan
         return true;
     }
 
-    private bool AtLastBlock()
-    {
-        throw new NotImplementedException();
-    }
+    private bool AtLastBlock() => _recordPage.BlockId.Number == _tx.Size(_fileName) - 1;
 
-    public void SetInt(string fieldName, int value)
-    {
-        throw new NotImplementedException();
-    }
+    public void SetInt(string fieldName, int value) =>
+        _recordPage.SetInt(_currentSlot, fieldName, value);
 
-    public void SetString(string fieldName, string value)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void MoveToBlock()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetString(string fieldName, string value) =>
+        _recordPage.SetString(_currentSlot, fieldName, value);
 
     private void MoveToNewBlock()
     {
-        throw new NotImplementedException();
+        Close();
+        var blockId = _tx.Append(_fileName);
+        _recordPage = new RecordPage(_tx, blockId, _layout);
+        _recordPage.Format();
+
+        _currentSlot = -1;
     }
 }

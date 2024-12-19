@@ -16,6 +16,8 @@ public interface ITableScan
 
     public void Insert();
 
+    public void Delete();
+
     public int GetInt(string fieldName);
 
     public string GetString(string fieldName);

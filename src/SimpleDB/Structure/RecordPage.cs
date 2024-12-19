@@ -8,11 +8,11 @@ namespace SimpleDB.Structure;
 public class RecordPage : IRecordPage
 {
     private readonly ITransaction _tx;
-    private readonly Layout _layout;
+    private readonly ILayout _layout;
 
     public BlockId BlockId { get; }
 
-    public RecordPage(ITransaction tx, BlockId blockId, Layout layout)
+    public RecordPage(ITransaction tx, BlockId blockId, ILayout layout)
     {
         _tx = tx;
         BlockId = blockId;
@@ -20,10 +20,7 @@ public class RecordPage : IRecordPage
         tx.Pin(blockId);
     }
 
-    public void Delete(int slot)
-    {
-        throw new NotImplementedException();
-    }
+    public void Delete(int slot) => SetFlag(slot, RecordStatus.EMPTY);
 
     public void Format()
     {
@@ -110,12 +107,14 @@ public class RecordPage : IRecordPage
 
     public void SetInt(int slot, string fieldName, int value)
     {
-        throw new NotImplementedException();
+        var fieldPos = Offset(slot) + _layout.Offset(fieldName);
+        _tx.SetInt(BlockId, fieldPos, value, true);
     }
 
     public void SetString(int slot, string fieldName, string value)
     {
-        throw new NotImplementedException();
+        var fieldPos = Offset(slot) + _layout.Offset(fieldName);
+        _tx.SetString(BlockId, fieldPos, value, true);
     }
 
     private bool IsValidSlot(int slot) => Offset(slot + 1) <= _tx.BlockSize();
