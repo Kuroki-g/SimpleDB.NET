@@ -12,7 +12,7 @@ public class TableScan : ITableScan
 
     private readonly Layout _layout;
 
-    private IRecordPage _recordPage;
+    private RecordPage _recordPage;
 
     private readonly string _fileName;
     private int _currentSlot;

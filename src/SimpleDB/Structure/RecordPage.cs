@@ -1,11 +1,10 @@
-using System.Runtime.InteropServices;
 using SimpleDB.Sql;
 using SimpleDB.Storage;
 using SimpleDB.Tx;
 
 namespace SimpleDB.Structure;
 
-public class RecordPage : IRecordPage
+public class RecordPage
 {
     private readonly ITransaction _tx;
     private readonly Layout _layout;
