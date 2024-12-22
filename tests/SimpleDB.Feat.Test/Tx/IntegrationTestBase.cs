@@ -1,5 +1,6 @@
 using SimpleDB.DataBuffer;
 using SimpleDB.Logging;
+using SimpleDB.Metadata;
 using SimpleDB.Storage;
 using SimpleDB.Structure;
 using SimpleDB.Tx;
@@ -34,7 +35,7 @@ public abstract class IntegrationTestBase : IDisposable
     /// <returns></returns>
     public Transaction CreateTransaction()
     {
-        var fm = new FileManager(_dir, 0x190);
+        var fm = new FileManager(_dir, 0x320);
         var lm = new LogManager(fm, "simpledb.log");
         var bm = new BufferManager(fm, lm, 8);
 
@@ -48,5 +49,13 @@ public abstract class IntegrationTestBase : IDisposable
         schema.AddStringField("B", 9);
 
         return schema;
+    }
+
+    internal (TableManager tm, Transaction tx) CreateTableManager(bool isNew = true)
+    {
+        var tx = CreateTransaction();
+        var tm = new TableManager(isNew, tx);
+
+        return (tm, tx);
     }
 }

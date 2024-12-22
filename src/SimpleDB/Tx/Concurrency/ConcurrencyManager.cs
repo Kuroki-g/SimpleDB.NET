@@ -8,8 +8,14 @@ public class ConcurrencyManager : IConcurrencyManager
 
     private readonly Dictionary<BlockId, LockType> _locks = [];
 
+    private readonly int LOCK_MAX_COUNT = short.MaxValue;
+
     public void SharedLock(BlockId blockId)
     {
+        if (_locks.Count > LOCK_MAX_COUNT)
+        {
+            throw new LockAbortException("too much lock was used. please check your operation.");
+        }
         if (GetLockType(blockId) == LockType.NONE)
         {
             _lockTable.SharedLock(blockId);

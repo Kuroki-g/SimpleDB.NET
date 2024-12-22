@@ -1,7 +1,5 @@
-using FakeItEasy.Sdk;
 using SimpleDB.Feat.Test.Tx;
 using SimpleDB.Metadata;
-using SimpleDB.Sql;
 using SimpleDB.Structure;
 
 namespace SimpleDB.Feat.Test.Metadata;
@@ -99,16 +97,16 @@ public class TableManagerTest : IntegrationTestBase
     public void GetLayout_exist_table()
     {
         {
-            var tx = CreateTransaction();
-            var tm = new TableManager(true, tx);
-
+            // 空のテーブルを作成する。トランザクションをCommitまで行い、永続化する。
+            using var tx = CreateTransaction();
             var schema = CreateSchema();
-            tm.CreateTable("MyTable", schema, tx);
+            var _ = new TableManager(true, tx);
+            _.CreateTable("MyTable", schema, tx);
             tx.Commit();
             tx.Dispose();
         }
 
-        var tx2 = CreateTransaction();
+        using var tx2 = CreateTransaction();
         var tm2 = new TableManager(false, tx2);
         var layout = tm2.GetLayout("MyTable", tx2);
 

@@ -5,33 +5,70 @@ namespace SimpleDB.Feat.Test.Structure;
 
 public class RecordTest : IntegrationTestBase
 {
+    private readonly Random _random;
+
+    public RecordTest()
+    {
+        _random = new Random();
+    }
+
     [Fact]
     public void RecordTest1()
     {
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
 
-        var schema = new Schema();
-        schema.AddIntField("A");
-        schema.AddStringField("B", 9);
-        var layout = new Layout(schema);
+        var sch = new Schema();
+        sch.AddIntField("A");
+        sch.AddStringField("B", 9);
+        var layout = new Layout(sch);
+        foreach (var fldname in layout.Schema.Fields)
+        {
+            var offset = layout.Offset(fldname);
+            Console.WriteLine(fldname + " has offset " + offset);
+        }
+        var blk = tx.Append("testfile");
+        tx.Pin(blk);
+        var rp = new RecordPage(tx, blk, layout);
+        rp.Format();
 
-        var blockId = tx.Append("test-file");
-        tx.Pin(blockId);
-
-        var recordPage = new RecordPage(tx, blockId, layout);
-        recordPage.Format();
-
-        var slot = recordPage.InsertAfter(-1);
+        Console.WriteLine("Filling the page with random records.");
+        int slot = rp.InsertAfter(-1);
         while (slot >= 0)
         {
-            var a = recordPage.GetInt(slot, "A");
-            var b = recordPage.GetString(slot, "B");
-            slot = recordPage.NextAfter(slot);
-
-            Assert.Equal(default, a);
-            Assert.Equal(string.Empty, b);
+            int n = (int)Math.Round((double)_random.Next() * 50);
+            rp.SetInt(slot, "A", n);
+            rp.SetString(slot, "B", "rec" + n);
+            Console.WriteLine("inserting into slot " + slot + ": {" + n + ", " + "rec" + n + "}");
+            slot = rp.InsertAfter(slot);
         }
-        tx.Unpin(blockId); // TODO: feature testにこれは必要か？
-        tx.Commit(); // TODO: feature testにこれは必要か？
+
+        Console.WriteLine("Deleting these records, whose A-values are less than 25.");
+        int count = 0;
+        slot = rp.NextAfter(-1);
+        while (slot >= 0)
+        {
+            int a = rp.GetInt(slot, "A");
+            var b = rp.GetString(slot, "B");
+            if (a < 25)
+            {
+                count++;
+                Console.WriteLine("slot " + slot + ": {" + a + ", " + b + "}");
+                rp.Delete(slot);
+            }
+            slot = rp.NextAfter(slot);
+        }
+        Console.WriteLine(count + " values under 25 were deleted.\n");
+
+        Console.WriteLine("Here are the remaining records.");
+        slot = rp.NextAfter(-1);
+        while (slot >= 0)
+        {
+            var a = rp.GetInt(slot, "A");
+            var b = rp.GetString(slot, "B");
+            Console.WriteLine("slot " + slot + ": {" + a + ", " + b + "}");
+            slot = rp.NextAfter(slot);
+        }
+        tx.Unpin(blk);
+        tx.Commit();
     }
 }

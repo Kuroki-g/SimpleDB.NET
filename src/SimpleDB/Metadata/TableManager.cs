@@ -5,8 +5,11 @@ namespace SimpleDB.Metadata;
 
 public class TableManager : ITableManager
 {
-    public readonly int MAX_NAME = 16;
+    public int MAX_NAME { get; } = 16;
 
+    /// <summary>
+    /// TODO: 恐らくここにあるよりは新しく概念として定義した方がよさそうだ。
+    /// </summary>
     public static readonly string CATALOG_NAME_TABLE = "tblcat";
 
     public static readonly string CATALOG_NAME_FIELD = "fldcat";
@@ -55,24 +58,24 @@ public class TableManager : ITableManager
     {
         var layout = new Layout(schema);
         // テーブルカタログに作成するテーブルの名称を記録する。
-        var tCat = new TableScan(tx, CATALOG_NAME_TABLE, _tCatLayout);
-        tCat.Insert();
-        tCat.SetString(CatalogSchema.FIELD_TABLE_NAME, tableName);
-        tCat.SetInt(CatalogSchema.FIELD_SLOT_SIZE, layout.SlotSize);
-        tCat.Close();
+        var tCatScan = new TableScan(tx, CATALOG_NAME_TABLE, _tCatLayout);
+        tCatScan.Insert();
+        tCatScan.SetString(CatalogSchema.FIELD_TABLE_NAME, tableName);
+        tCatScan.SetInt(CatalogSchema.FIELD_SLOT_SIZE, layout.SlotSize);
+        tCatScan.Close();
 
         // 追加するフィールドをフィールドカタログに記録する。
-        var fCat = new TableScan(tx, CATALOG_NAME_FIELD, _fCatLayout);
+        var fCatScan = new TableScan(tx, CATALOG_NAME_FIELD, _fCatLayout);
         foreach (var fieldName in schema.Fields)
         {
-            fCat.Insert();
-            fCat.SetString(CatalogSchema.FIELD_TABLE_NAME, tableName);
-            fCat.SetString(CatalogSchema.FIELD_FIELD_NAME, fieldName);
-            fCat.SetInt(CatalogSchema.FIELD_TYPE, schema.Type(fieldName));
-            fCat.SetInt(CatalogSchema.FIELD_LENGTH, schema.Length(fieldName));
-            fCat.SetInt(CatalogSchema.FIELD_OFFSET, layout.Offset(fieldName));
+            fCatScan.Insert();
+            fCatScan.SetString(CatalogSchema.FIELD_TABLE_NAME, tableName);
+            fCatScan.SetString(CatalogSchema.FIELD_FIELD_NAME, fieldName);
+            fCatScan.SetInt(CatalogSchema.FIELD_TYPE, schema.Type(fieldName));
+            fCatScan.SetInt(CatalogSchema.FIELD_LENGTH, schema.Length(fieldName));
+            fCatScan.SetInt(CatalogSchema.FIELD_OFFSET, layout.Offset(fieldName));
         }
-        fCat.Close();
+        fCatScan.Close();
     }
 
     public Layout GetLayout(string tableName, ITransaction tx)

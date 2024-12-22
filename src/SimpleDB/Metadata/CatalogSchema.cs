@@ -10,7 +10,7 @@ internal sealed class CatalogSchema : Schema
 {
     public static readonly string FIELD_TABLE_NAME = "tblname";
 
-    public static readonly string FIELD_FIELD_NAME = "filname";
+    public static readonly string FIELD_FIELD_NAME = "fldname";
 
     public static readonly string FIELD_TYPE = "type";
 

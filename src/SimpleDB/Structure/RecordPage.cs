@@ -92,7 +92,8 @@ public class RecordPage
         slot++;
         while (IsValidSlot(slot))
         {
-            if (_tx.GetInt(BlockId, Offset(slot)) == flag)
+            var offset = Offset(slot);
+            if (_tx.GetInt(BlockId, offset) == flag)
             {
                 return slot;
             }
