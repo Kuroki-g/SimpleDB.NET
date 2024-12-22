@@ -58,13 +58,13 @@ public sealed class StatManager : IStatManager
         _calledCount = 0; // 呼び出し回数をリセットする。
         _tableStats = [];
         var tCatLayout = _tableManager.GetLayout(TableManager.CATALOG_NAME_TABLE, tx);
-        var tCat = new TableScan(tx, TableManager.CATALOG_NAME_TABLE, tCatLayout);
-        while (tCat.Next())
+        var tCatScan = new TableScan(tx, TableManager.CATALOG_NAME_TABLE, tCatLayout);
+        while (tCatScan.Next())
         {
-            var tableName = tCat.GetString(TableManager.CATALOG_NAME_TABLE);
+            var tableName = tCatScan.GetString(CatalogSchema.FIELD_TABLE_NAME);
             var layout = _tableManager.GetLayout(tableName, tx);
             _tableStats[tableName] = CalculateTableStats(tableName, layout, tx);
         }
-        tCat.Close();
+        tCatScan.Close();
     }
 }
