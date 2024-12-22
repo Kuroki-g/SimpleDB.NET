@@ -11,7 +11,7 @@ public class TableManager : ITableManager
 
     public static readonly string CATALOG_NAME_FIELD = "fldcat";
 
-    private readonly ILayout _tCatLayout,
+    private readonly Layout _tCatLayout,
         _fCatLayout;
 
     /// <summary>
@@ -75,7 +75,7 @@ public class TableManager : ITableManager
         fCat.Close();
     }
 
-    public ILayout GetLayout(string tableName, ITransaction tx)
+    public Layout GetLayout(string tableName, ITransaction tx)
     {
         var size = -1;
         var tCat = new TableScan(tx, CATALOG_NAME_TABLE, _tCatLayout);

@@ -8,11 +8,11 @@ namespace SimpleDB.Structure;
 public class RecordPage : IRecordPage
 {
     private readonly ITransaction _tx;
-    private readonly ILayout _layout;
+    private readonly Layout _layout;
 
     public BlockId BlockId { get; }
 
-    public RecordPage(ITransaction tx, BlockId blockId, ILayout layout)
+    public RecordPage(ITransaction tx, BlockId blockId, Layout layout)
     {
         _tx = tx;
         BlockId = blockId;

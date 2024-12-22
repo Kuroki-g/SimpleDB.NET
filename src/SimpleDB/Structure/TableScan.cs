@@ -10,7 +10,7 @@ public class TableScan : ITableScan
 {
     private readonly ITransaction _tx;
 
-    private readonly ILayout _layout;
+    private readonly Layout _layout;
 
     private IRecordPage _recordPage;
 
@@ -19,7 +19,7 @@ public class TableScan : ITableScan
 
     public static string RealFileName(string tableName) => $"{tableName}.tbl";
 
-    public TableScan(ITransaction tx, string tableName, ILayout layout)
+    public TableScan(ITransaction tx, string tableName, Layout layout)
     {
         _tx = tx;
         _layout = layout;

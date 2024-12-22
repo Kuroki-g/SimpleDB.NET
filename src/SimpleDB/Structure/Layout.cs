@@ -7,7 +7,7 @@ namespace SimpleDB.Structure;
 /// <summary>
 /// レコードの構造を保有するためのクラスである。
 /// </summary>
-public class Layout : ILayout
+public class Layout
 {
     /// <summary>
     /// テーブルのスキーマを返す。
