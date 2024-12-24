@@ -9,7 +9,7 @@ public class ViewManager : IViewManager
 
     private readonly ITableManager _tableManager;
 
-    public ViewManager(bool isNew, ITableManager tableManager, Transaction tx)
+    public ViewManager(bool isNew, ITableManager tableManager, ITransaction tx)
     {
         _tableManager = tableManager;
         if (isNew)
