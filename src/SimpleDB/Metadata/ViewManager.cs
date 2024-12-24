@@ -15,7 +15,6 @@ public class ViewManager : IViewManager
         if (isNew)
         {
             var schema = new Schema();
-            var m = _tableManager.MAX_NAME;
             schema.AddStringField(ViewSchema.FIELD_VIEW_NAME, _tableManager.MAX_NAME);
             schema.AddStringField(ViewSchema.FIELD_VIEW_DEF, MAX_VIEWDEF);
             _tableManager.CreateTable(ViewSchema.TABLE_NAME_VIEW_CATALOG, schema, tx);

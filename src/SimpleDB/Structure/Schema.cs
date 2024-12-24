@@ -50,7 +50,7 @@ internal class Schema : ISchema
 
     public bool HasField(string fieldName) => Fields.Contains(fieldName);
 
-    private FieldInfo GetFieldInfo(string fieldName) =>
+    protected FieldInfo GetFieldInfo(string fieldName) =>
         _info.GetValueOrDefault(fieldName) ?? throw new InvalidDataException("not exist field");
 
     public int Length(string fieldName) => GetFieldInfo(fieldName).Length;
