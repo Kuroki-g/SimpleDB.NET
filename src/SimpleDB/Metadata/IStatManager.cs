@@ -3,7 +3,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public interface IStatManager
+internal interface IStatManager
 {
     public StatInfo GetStatInfo(string tableName, Layout layout, ITransaction tx);
 }

@@ -3,7 +3,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public class TableManager : ITableManager
+internal class TableManager : ITableManager
 {
     public int MAX_NAME { get; } = 16;
 

@@ -2,7 +2,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public interface IViewManager
+internal interface IViewManager
 {
     public void CreateView(string viewName, string viewDef, ITransaction tx);
 

@@ -2,7 +2,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public interface IIndexManager
+internal interface IIndexManager
 {
     public void CreateIndex(
         string indexName,

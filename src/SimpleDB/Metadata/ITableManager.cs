@@ -3,7 +3,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public interface ITableManager
+internal interface ITableManager
 {
     /// <summary>
     /// the max chars in a view definition.

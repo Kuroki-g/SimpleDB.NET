@@ -4,7 +4,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public class IndexManager : IIndexManager
+internal class IndexManager : IIndexManager
 {
     private readonly ITableManager _tm;
     private readonly IStatManager _sm;

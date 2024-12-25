@@ -3,7 +3,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public class ViewManager : IViewManager
+internal class ViewManager : IViewManager
 {
     private static readonly int MAX_VIEWDEF = 100;
 

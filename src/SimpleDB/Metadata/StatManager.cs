@@ -4,7 +4,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-public sealed class StatManager : IStatManager
+internal sealed class StatManager : IStatManager
 {
     private static readonly int REFRESH_THRESHOLD = 100;
 
