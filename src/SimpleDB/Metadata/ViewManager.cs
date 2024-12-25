@@ -14,9 +14,7 @@ public class ViewManager : IViewManager
         _tableManager = tableManager;
         if (isNew)
         {
-            var schema = new Schema();
-            schema.AddStringField(ViewSchema.FIELD_VIEW_NAME, _tableManager.MAX_NAME);
-            schema.AddStringField(ViewSchema.FIELD_VIEW_DEF, MAX_VIEWDEF);
+            var schema = new ViewSchema(_tableManager.MAX_NAME, MAX_VIEWDEF);
             _tableManager.CreateTable(ViewSchema.TABLE_NAME_VIEW_CATALOG, schema, tx);
         }
     }
@@ -26,9 +24,7 @@ public class ViewManager : IViewManager
         var layout = _tableManager.GetLayout(ViewSchema.TABLE_NAME_VIEW_CATALOG, tx);
         var ts = new TableScan(tx, ViewSchema.TABLE_NAME_VIEW_CATALOG, layout);
         ts.Insert();
-        // TODO: dataのサイズが大きい場合にblockの入れ替えがうまく出来ずに無限ループしてしまう。
-        ts.SetString(ViewSchema.FIELD_VIEW_NAME, viewName);
-        ts.SetString(ViewSchema.FIELD_VIEW_DEF, viewDef);
+        ViewSchema.SetFields(ts, viewName, viewDef);
         ts.Close();
     }
 
