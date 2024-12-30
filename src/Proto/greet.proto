@@ -3,7 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "GrpcGreeter";
 
 package greet;
-
+// See: https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/src/csharp/BUILD-INTEGRATION.md
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
