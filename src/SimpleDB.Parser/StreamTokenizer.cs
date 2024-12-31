@@ -30,7 +30,7 @@ public class StreamTokenizer : IDisposable
     /// </summary>
     public readonly static int TT_WORD = -3;
 
-    private static readonly string NEW_LINE = Environment.NewLine;
+    public static readonly string NEW_LINE = Environment.NewLine;
 
     /// <summary>
     /// TT_WORDは、トークンがワードであることを示す。

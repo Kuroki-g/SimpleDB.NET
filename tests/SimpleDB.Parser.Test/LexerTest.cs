@@ -8,7 +8,7 @@ public class LexerTest
         var lex = new Lexer("");
         string x;
         int y;
-        if (lex.MatchId())
+        if (lex.IsIdMatch)
         {
             x = lex.EatId();
             lex.EatDelim('=');

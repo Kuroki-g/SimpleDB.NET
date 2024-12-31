@@ -23,51 +23,95 @@ public class Lexer
         "index",
         "on",
     ];
+    private readonly StreamTokenizer _tokenizer;
 
-    public Lexer(string s) { }
-
-    public bool MatchDelim(char c)
+    public Lexer(string s)
     {
-        throw new NotImplementedException();
+        _tokenizer = new StreamTokenizer(new StringReader(s));
+        NextToken();
     }
 
-    public bool MatchIntConstant(char c)
+    private void NextToken()
     {
-        throw new NotImplementedException();
+        try
+        {
+            _tokenizer.NextToken();
+        }
+        catch (Exception e)
+        {
+            throw new BadSyntaxException(e.Message);
+        }
     }
 
-    public bool MatchIntConstant()
-    {
-        throw new NotImplementedException();
-    }
+    /// <summary>
+    /// TODO: ほんとうにこのキャストで正しいかを確認する。
+    /// </summary>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
+    public bool MatchDelim(char delimiter) => delimiter == (char)_tokenizer.TType;
 
-    public bool MatchKeyword(string w)
-    {
-        throw new NotImplementedException();
-    }
+    public bool MatchIntConstant() => _tokenizer.TType == StreamTokenizer.TT_NUMBER;
 
-    public bool MatchId()
-    {
-        throw new NotImplementedException();
-    }
+    public bool MatchStringConstant() => '\'' == (char)_tokenizer.TType;
+
+    public bool MatchKeyword(string w) =>
+        _tokenizer.TType == StreamTokenizer.TT_WORD
+        && w.Equals(_tokenizer.SVal, StringComparison.OrdinalIgnoreCase);
+
+    public bool IsIdMatch =>
+        _tokenizer.TType == StreamTokenizer.TT_WORD
+        && !_keywords.Contains(_tokenizer.SVal, StringComparer.OrdinalIgnoreCase);
 
     public void EatDelim(char c)
     {
-        throw new NotImplementedException();
+        if (MatchDelim(c))
+        {
+            NextToken();
+            return;
+        }
+        throw new BadSyntaxException($"Expected delimiter {c}");
     }
 
     public int EatIntConstant()
     {
-        throw new NotImplementedException();
+        if (MatchIntConstant())
+        {
+            var i = (int)_tokenizer.NVal;
+            NextToken();
+            return i;
+        }
+        throw new BadSyntaxException("Expected integer constant");
+    }
+
+    public string EatStringConstant()
+    {
+        if (MatchStringConstant())
+        {
+            var s = _tokenizer.SVal ?? string.Empty;
+            NextToken();
+            return s;
+        }
+        throw new BadSyntaxException("Expected string constant");
     }
 
     public void EatKeyword(string w)
     {
-        throw new NotImplementedException();
+        if (MatchKeyword(w))
+        {
+            NextToken();
+            return;
+        }
+        throw new BadSyntaxException($"Expected keyword {w}");
     }
 
     public string EatId()
     {
-        throw new NotImplementedException();
+        if (IsIdMatch)
+        {
+            var s = _tokenizer.SVal ?? string.Empty;
+            NextToken();
+            return s;
+        }
+        throw new BadSyntaxException("Expected identifier");
     }
 }
