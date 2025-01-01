@@ -1,4 +1,4 @@
-namespace SimpleDB.Sql;
+namespace Common;
 
 public class Constant : IComparable
 {
