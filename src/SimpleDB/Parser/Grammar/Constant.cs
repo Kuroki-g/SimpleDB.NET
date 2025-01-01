@@ -1,4 +1,4 @@
-namespace Common;
+namespace SimpleDB.Parser.Grammar;
 
 public class Constant : IComparable
 {
