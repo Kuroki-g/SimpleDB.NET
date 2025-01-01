@@ -6,9 +6,11 @@ public interface IScan
 
     public bool Next();
 
-    public int GetInt();
+    public int GetInt(string fieldName);
 
-    public string GetString();
+    public string GetString(string fieldName);
+
+    public Constant GetValue(string fieldName);
 
     public bool HasField(string fieldName);
 
