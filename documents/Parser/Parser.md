@@ -13,9 +13,9 @@ Database design  and implementation の9.4 (p246)を参照のこと。
 \\
 & \text{{<}Expression{>}} &&:= \text{{<}Field{>}}|\text{{<}Constant{>}}
 \\
-& \text{{<}Term{>}}       &&:= \text{{<}Expression{>}}|\text{{<}Expression{>}}
+& \text{{<}Term{>}}       &&:= \text{{<}Expression{>}} = \text{{<}Expression{>}}
 \\
-& \text{{<}Predicate{>}}  &&:= \text{{<}Term{>}} [\text{AND {<}Predicate{>}} ]
+& \text{{<}Predicate{>}}  &&:= \text{{<}Term{>}} [\text{ AND {<}Predicate{>} } ]
 \end{aligned}
 \end{equation} 
 ```
