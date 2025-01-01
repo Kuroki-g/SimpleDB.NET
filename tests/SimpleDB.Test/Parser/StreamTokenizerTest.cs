@@ -1,4 +1,6 @@
-namespace SimpleDB.Parser.Test;
+using SimpleDB.Parser;
+
+namespace SimpleDB.Test.Parser;
 
 public class StreamTokenizerTest
 {
