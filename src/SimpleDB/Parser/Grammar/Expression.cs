@@ -1,6 +1,7 @@
+using SimpleDB.Query;
 using SimpleDB.Structure;
 
-namespace SimpleDB.Sql;
+namespace SimpleDB.Parser.Grammar;
 
 public class Expression
 {
