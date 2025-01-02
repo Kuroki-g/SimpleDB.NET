@@ -1,2 +1,1 @@
-global using Constant = Common.Constant;
-global using Expression = SimpleDB.Sql.Expression;
+global using Query = SimpleDB.Parser.Grammar.Query;
