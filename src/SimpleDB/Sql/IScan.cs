@@ -1,3 +1,5 @@
+using SimpleDB.Parser.Grammar;
+
 namespace SimpleDB.Sql;
 
 public interface IScan
