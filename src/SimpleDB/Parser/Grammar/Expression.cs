@@ -1,4 +1,4 @@
-using SimpleDB.Query;
+using SimpleDB.Sql;
 using SimpleDB.Structure;
 
 namespace SimpleDB.Parser.Grammar;
