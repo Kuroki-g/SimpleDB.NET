@@ -1,4 +1,4 @@
-using SimpleDB.Query;
+using SimpleDB.Sql;
 using SimpleDB.Structure;
 
 namespace SimpleDB.Parser.Grammar;
@@ -12,6 +12,11 @@ public class Term(Expression lhs, Expression rhs)
     public bool IsSatisfied(IScan scan)
     {
         return _lhs.Evaluate(scan).Equals(_rhs.Evaluate(scan));
+    }
+
+    public int ReductionFactor(IPlan plan)
+    {
+        throw new NotImplementedException();
     }
 
     public bool AppliesTo(ISchema schema)
