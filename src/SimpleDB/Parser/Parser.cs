@@ -1,4 +1,5 @@
 using SimpleDB.Parser.Grammar;
+using SimpleDB.Structure;
 
 namespace SimpleDB.Parser;
 
@@ -6,7 +7,10 @@ public class Parser(string s)
 {
     private readonly Lexer _lexer = new(s);
 
-    public string Field => _lexer.EatId();
+    public string Field()
+    {
+        return _lexer.EatId();
+    }
 
     public Constant Constant =>
         _lexer.MatchStringConstant()
@@ -14,7 +18,7 @@ public class Parser(string s)
             : new Constant(_lexer.EatIntConstant());
 
     public Expression Expression =>
-        _lexer.IsIdMatch ? new Expression(Field) : new Expression(Constant);
+        _lexer.IsIdMatch ? new Expression(Field()) : new Expression(Constant);
 
     public Term Term()
     {
@@ -53,7 +57,7 @@ public class Parser(string s)
     private List<string> SelectList()
     {
         List<string> fields = [];
-        fields.Add(Field);
+        fields.Add(Field());
         while (_lexer.MatchDelim(','))
         {
             _lexer.EatDelim(',');
@@ -121,9 +125,53 @@ public class Parser(string s)
         throw new NotImplementedException();
     }
 
-    private object CreateTable()
+    private CreateTable CreateTable()
     {
-        throw new NotImplementedException();
+        _lexer.EatKeyword("table");
+        var tableName = _lexer.EatId();
+        _lexer.EatDelim('(');
+        var schema = FieldDefs();
+        _lexer.EatDelim(')');
+
+        return new CreateTable(schema, tableName);
+    }
+
+    private Schema FieldDefs()
+    {
+        var schema = FieldDef();
+        if (_lexer.MatchDelim(','))
+        {
+            _lexer.EatDelim(',');
+            schema.AddAll(FieldDefs());
+        }
+        return schema;
+    }
+
+    private Schema FieldDef()
+    {
+        var fieldName = Field();
+        return FieldType(fieldName);
+    }
+
+    private Schema FieldType(string fieldName)
+    {
+        var schema = new Schema();
+
+        if (_lexer.MatchKeyword("int"))
+        {
+            _lexer.EatKeyword("int");
+            schema.AddIntField(fieldName);
+        }
+        else
+        {
+            // parse varchar(n)
+            _lexer.EatKeyword("varchar");
+            _lexer.EatDelim('(');
+            var n = _lexer.EatIntConstant();
+            _lexer.EatDelim(')');
+            schema.AddStringField(fieldName, n);
+        }
+        return schema;
     }
 
     private object Modify()
@@ -175,7 +223,7 @@ public class Parser(string s)
     private List<string> FieldList()
     {
         List<string> list = [];
-        list.Add(Field);
+        list.Add(Field());
         if (_lexer.MatchDelim(','))
         {
             _lexer.EatDelim(',');
