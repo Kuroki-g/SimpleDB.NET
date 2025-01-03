@@ -1,6 +1,6 @@
 using SimpleDB.SqlParser;
 
-namespace SimpleDB.Test.Parser;
+namespace SimpleDB.Test.SqlParser;
 
 public class LexerTest
 {
