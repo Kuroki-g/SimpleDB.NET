@@ -5,7 +5,7 @@ namespace SimpleDB.Metadata;
 
 public interface IMetadataManager
 {
-    public void CreateTable(string tableName, ISchema schema, ITransaction tx);
+    public void CreateTable(string tableName, Schema schema, ITransaction tx);
 
     public Layout GetLayout(string tableName, ITransaction tx);
 

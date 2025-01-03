@@ -12,7 +12,7 @@ public class Layout
     /// <summary>
     /// テーブルのスキーマを返す。
     /// </summary>
-    public ISchema Schema { get; }
+    public Schema Schema { get; }
 
     public int SlotSize { get; }
 
@@ -25,7 +25,7 @@ public class Layout
 
     private readonly Dictionary<string, int> _offsets = [];
 
-    public Layout(ISchema schema)
+    public Layout(Schema schema)
     {
         Schema = schema;
         var pos = Bytes.Integer;
@@ -38,7 +38,7 @@ public class Layout
         SlotSize = pos;
     }
 
-    public Layout(ISchema schema, Dictionary<string, int> offsets, int slotSize)
+    public Layout(Schema schema, Dictionary<string, int> offsets, int slotSize)
     {
         Schema = schema;
         _offsets = offsets;

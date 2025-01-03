@@ -110,7 +110,7 @@ public class TableManagerTest : IntegrationTestBase
         var tm2 = new TableManager(false, tx2);
         var layout = tm2.GetLayout("MyTable", tx2);
 
-        Assert.NotEmpty(layout.Schema.Fields);
+        Assert.NotEmpty((global::System.Collections.IEnumerable)layout.Schema.Fields);
     }
 
     [Fact]
@@ -122,6 +122,6 @@ public class TableManagerTest : IntegrationTestBase
         var tm = new TableManager(true, tx);
         var layout = tm.GetLayout("NotExistTable", tx);
 
-        Assert.Empty(layout.Schema.Fields);
+        Assert.Empty((global::System.Collections.IEnumerable)layout.Schema.Fields);
     }
 }

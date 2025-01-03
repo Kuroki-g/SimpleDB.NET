@@ -27,7 +27,7 @@ public class Expression
 
     public string? AsFieldName => _fieldName;
 
-    public bool AppliesTo(ISchema schema) => _value is null ? schema.HasField(_fieldName!) : true;
+    public bool AppliesTo(Schema schema) => _value is null ? schema.HasField(_fieldName!) : true;
 
     public override string ToString() =>
         (_value is null ? _fieldName : _value.ToString()) ?? string.Empty;

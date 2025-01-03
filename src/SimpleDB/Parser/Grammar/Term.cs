@@ -19,7 +19,7 @@ public class Term(Expression lhs, Expression rhs)
         throw new NotImplementedException();
     }
 
-    public bool AppliesTo(ISchema schema)
+    public bool AppliesTo(Schema schema)
     {
         return _lhs.AppliesTo(schema) && _rhs.AppliesTo(schema);
     }

@@ -7,7 +7,7 @@ public interface IPlan
 {
     public IScan Open();
 
-    public ISchema Schema { get; }
+    public Schema Schema { get; }
 
     public int BlocksAccessed { get; }
     public int RecordsOutput { get; }

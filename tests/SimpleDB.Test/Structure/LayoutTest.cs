@@ -8,7 +8,7 @@ public class LayoutTest
     [Fact]
     public void Layout_hold_passed_schema()
     {
-        var schema = A.Fake<ISchema>();
+        var schema = A.Fake<Schema>();
 
         var layout = new Layout(schema);
 

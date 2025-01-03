@@ -1,7 +1,8 @@
 namespace SimpleDB.Structure;
 
-internal class FieldInfo(int type, int length)
+public class FieldInfo(int type, int length)
 {
-    internal int Type = type,
-        Length = length;
+    public readonly int Type = type;
+
+    public readonly int Length = length;
 }

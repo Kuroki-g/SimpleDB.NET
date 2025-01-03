@@ -54,7 +54,7 @@ internal class TableManager : ITableManager
     /// <param name="tableName"></param>
     /// <param name="schema"></param>
     /// <param name="tx"></param>
-    public void CreateTable(string tableName, ISchema schema, ITransaction tx)
+    public void CreateTable(string tableName, Schema schema, ITransaction tx)
     {
         var layout = new Layout(schema);
         // テーブルカタログに作成するテーブルの名称を記録する。

@@ -6,9 +6,8 @@ namespace SimpleDB.Structure;
 /// <summary>
 /// テーブルにおけるレコードのスキーマである。
 /// 名前、型を持つ。
-/// TODO: 密結合でも問題ないとわかったらISchemaを削除する。
 /// </summary>
-internal class Schema : ISchema
+public class Schema
 {
     /// <summary>
     /// NOTE: 暫定的にpublic Listにしているが、書き換えられるといけないことを考慮する。
@@ -19,12 +18,12 @@ internal class Schema : ISchema
 
     private readonly Dictionary<string, FieldInfo> _info = [];
 
-    public void Add(string fieldName, ISchema schema)
+    public void Add(string fieldName, Schema schema)
     {
         AddField(fieldName, schema.Type(fieldName), schema.Length(fieldName));
     }
 
-    public void AddAll(ISchema schema)
+    public void AddAll(Schema schema)
     {
         foreach (var fieldName in schema.Fields)
         {

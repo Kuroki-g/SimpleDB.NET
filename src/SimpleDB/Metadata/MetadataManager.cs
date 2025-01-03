@@ -26,7 +26,7 @@ public class MetadataManager : IMetadataManager
         s_indexManager.CreateIndex(tableName, tableName, fieldName, IndexType.HASH, tx);
     }
 
-    public void CreateTable(string tableName, ISchema schema, ITransaction tx)
+    public void CreateTable(string tableName, Schema schema, ITransaction tx)
     {
         s_tableManager.CreateTable(tableName, schema, tx);
     }

@@ -8,7 +8,7 @@ public class IndexInfo
 {
     private readonly string _indexName;
     private readonly string _fieldName;
-    private readonly ISchema _tableSchema;
+    private readonly Schema _tableSchema;
     private readonly ITransaction _tx;
     private readonly StatInfo _statInfo;
     private readonly Layout _layout;
@@ -16,7 +16,7 @@ public class IndexInfo
     public IndexInfo(
         string indexName,
         string fieldName,
-        ISchema tableSchema,
+        Schema tableSchema,
         ITransaction tx,
         StatInfo statInfo
     )
