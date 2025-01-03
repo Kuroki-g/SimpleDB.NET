@@ -1,7 +1,7 @@
-using SimpleDB.Parser.Grammar;
+using SimpleDB.SqlParser.Grammar;
 using SimpleDB.Structure;
 
-namespace SimpleDB.Parser;
+namespace SimpleDB.SqlParser;
 
 public class Parser(string s)
 {

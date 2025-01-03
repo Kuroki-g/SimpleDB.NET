@@ -1,4 +1,4 @@
-namespace SimpleDB.Parser.Grammar;
+namespace SimpleDB.SqlParser.Grammar;
 
 /// <summary>
 /// Represents a query.

@@ -1,1 +1,1 @@
-global using Query = SimpleDB.Parser.Grammar.Query;
+global using Query = SimpleDB.SqlParser.Grammar.Query;

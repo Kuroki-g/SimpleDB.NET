@@ -1,4 +1,4 @@
-namespace SimpleDB.Parser;
+namespace SimpleDB.SqlParser;
 
 public class BadSyntaxException : Exception
 {

@@ -1,6 +1,6 @@
 using SimpleDB.Structure;
 
-namespace SimpleDB.Parser.Grammar;
+namespace SimpleDB.SqlParser.Grammar;
 
 public class CreateTable(Schema schema, string tableName)
 {

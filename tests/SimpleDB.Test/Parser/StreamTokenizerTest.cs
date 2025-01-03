@@ -1,4 +1,4 @@
-using SimpleDB.Parser;
+using SimpleDB.SqlParser;
 
 namespace SimpleDB.Test.Parser;
 

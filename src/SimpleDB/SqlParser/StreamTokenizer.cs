@@ -1,4 +1,4 @@
-namespace SimpleDB.Parser;
+namespace SimpleDB.SqlParser;
 
 /// <summary>
 /// JavaのStreamTokenizerのAPIを元に実装したもの。

@@ -1,7 +1,7 @@
 using SimpleDB.Sql;
 using SimpleDB.Structure;
 
-namespace SimpleDB.Parser.Grammar;
+namespace SimpleDB.SqlParser.Grammar;
 
 public class Term(Expression lhs, Expression rhs)
 {

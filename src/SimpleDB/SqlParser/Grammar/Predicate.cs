@@ -1,6 +1,6 @@
 using SimpleDB.Sql;
 
-namespace SimpleDB.Parser.Grammar;
+namespace SimpleDB.SqlParser.Grammar;
 
 public class Predicate
 {
