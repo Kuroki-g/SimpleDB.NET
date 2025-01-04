@@ -141,29 +141,48 @@ public class StreamTokenizer : IDisposable
     /// <returns><see cref="TT_EOF" />もしくは対応する値を返す。</returns>
     public int NextToken()
     {
-        int tType = TT_EOF;
+        int tType = GetTTypeAndSetValue();
+        _currentPos += 1;
+        TType = tType;
+
+        return tType;
+    }
+
+    private int GetTTypeAndSetValue()
+    {
+        var v = _tokens[_currentPos][0];
         if (_currentPos >= _tokens.Length)
         {
-            // do nothing
+            return TT_EOF;
+        }
+        else if (IsSymbol(_tokens[_currentPos][0]))
+        {
+            SVal = _tokens[_currentPos];
+            return _tokens[_currentPos][0];
         }
         else if (double.TryParse(_tokens[_currentPos], out double nVal))
         {
             NVal = nVal;
-            tType = TT_NUMBER;
+            return TT_NUMBER;
         }
         else if (_tokens[_currentPos] == NEW_LINE)
         {
             SVal = _tokens[_currentPos];
-            tType = TT_EOL;
+            return TT_EOL;
         }
         else
         {
             SVal = _tokens[_currentPos];
-            tType = TT_WORD;
+            return TT_WORD;
         }
-        _currentPos += 1;
+    }
 
-        return tType;
+    public bool IsSymbol(char c)
+    {
+        // this is not works well because of the char.IsSymbol method.
+        // return char.IsSymbol(c);
+        // give me how to check the char is symbol or not like java code.
+        return char.IsPunctuation(c) || char.IsSymbol(c);
     }
 
     /// <summary>

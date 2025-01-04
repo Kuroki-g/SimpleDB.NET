@@ -26,18 +26,20 @@ public class StreamTokenizerTest
         "on",
     ];
 
-    [Fact]
-    public void Test1()
+    [Theory]
+    [InlineData("+")]
+    [InlineData("-")]
+    [InlineData("^")]
+    [InlineData("=")]
+    [InlineData("'")]
+    public void TType_symbols(string s)
     {
-        var s = "()"; // change later
         var reader = new StringReader(s);
-        var tok = new StreamTokenizer(reader);
-        tok.OrdinaryChar('.');
-        // tok.LowerCaseMode(true); //ids and keywords are converted to lower case
-        while (tok.NextToken() != StreamTokenizer.TT_EOF)
-        {
-            PrintCurrentToken(tok);
-        }
+        var tokenizer = new StreamTokenizer(reader);
+
+        var actual = tokenizer.NextToken();
+
+        Assert.Equal(s[0], actual);
     }
 
     private static void PrintCurrentToken(StreamTokenizer tok)
