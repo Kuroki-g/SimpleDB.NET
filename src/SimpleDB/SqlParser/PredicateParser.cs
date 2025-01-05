@@ -6,7 +6,10 @@ public class PredicateParser(string s)
 {
     private readonly Lexer _lexer = new(s);
 
-    public string Field => _lexer.EatId();
+    public string Field()
+    {
+        return _lexer.EatIdentifier();
+    }
 
     public void Constant()
     {
@@ -22,7 +25,14 @@ public class PredicateParser(string s)
 
     public void Expression()
     {
-        return _lexer.IsIdMatch ? new Expression(Field) : new Expression(Constant);
+        if (_lexer.IsIdentifierMatch)
+        {
+            Field();
+        }
+        else
+        {
+            Constant();
+        }
     }
 
     /// <summary>
