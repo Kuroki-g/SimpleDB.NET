@@ -30,6 +30,8 @@ public class StreamTokenizer : IDisposable
 
     public static readonly string NEW_LINE = Environment.NewLine;
 
+    public int LineNo { get; private set; } = 1;
+
     /// <summary>
     /// TT_WORDは、トークンがワードであることを示す。
     /// TT_NUMBERは、トークンが数値であることを示す。
@@ -138,7 +140,11 @@ public class StreamTokenizer : IDisposable
     /// <summary>
     /// このトークナイザの入力ストリームから次のトークンを読み取り、そのトークンを構文解析します。
     /// </summary>
-    /// <returns><see cref="TT_EOF" />もしくは対応する値を返す。</returns>
+    /// <returns>
+    /// <see cref="TT_EOF" />もしくは対応する値を返す。
+    /// <see cref="NextToken" />が文字列定数を検出すると、<see cref="TType" />には文字列区切り文字が設定される。
+    /// この時、<see cref="SVal" />フィールドには文字列の本体が設定されます。
+    /// </returns>
     public int NextToken()
     {
         int tType = GetTTypeAndSetValue();
@@ -150,14 +156,13 @@ public class StreamTokenizer : IDisposable
 
     private int GetTTypeAndSetValue()
     {
-        var v = _tokens[_currentPos][0];
         if (_currentPos >= _tokens.Length)
         {
             return TT_EOF;
         }
         else if (IsSymbol(_tokens[_currentPos][0]))
         {
-            SVal = _tokens[_currentPos];
+            SVal = null;
             return _tokens[_currentPos][0];
         }
         else if (double.TryParse(_tokens[_currentPos], out double nVal))
@@ -203,19 +208,19 @@ public class StreamTokenizer : IDisposable
     {
         if (TType == TT_NUMBER)
         {
-            return $"Token[{(int)NVal}], line 10";
+            return $"Token[{(int)NVal}], line {LineNo}";
         }
         else if (TType == TT_WORD)
         {
-            return $"Token[{SVal}], line 10";
+            return $"Token[{SVal}], line {LineNo}";
         }
         else if (TType == '\'')
         {
-            return $"Token[{SVal}], line 10";
+            return $"Token[{SVal}], line {LineNo}";
         }
         else
         {
-            return $"Token[{(char)TType}], line 10";
+            return $"Token[{(char)TType}], line {LineNo}";
         }
     }
 
