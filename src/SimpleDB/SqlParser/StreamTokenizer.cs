@@ -158,6 +158,8 @@ public class StreamTokenizer : IDisposable
     {
         if (_currentPos >= _tokens.Length)
         {
+            SVal = null;
+            NVal = 0.0;
             return TT_EOF;
         }
         else if (IsSymbol(_tokens[_currentPos][0]))
@@ -213,6 +215,10 @@ public class StreamTokenizer : IDisposable
         else if (TType == TT_WORD)
         {
             return $"Token[{SVal}], line {LineNo}";
+        }
+        else if (TType == TT_EOF)
+        {
+            return $"Token[EOF], line {LineNo}";
         }
         else if (TType == '\'')
         {
