@@ -1,6 +1,6 @@
 ﻿namespace SimpleDB.SqlParser;
 
-public class Lexer
+public class Lexer : IDisposable
 {
     private readonly string[] _keywords =
     [
@@ -27,7 +27,7 @@ public class Lexer
 
     public Lexer(string s)
     {
-        _tokenizer = new StreamTokenizer(new StringReader(s));
+        _tokenizer = new StreamTokenizer(s);
         NextToken();
     }
 
@@ -48,7 +48,7 @@ public class Lexer
     /// </summary>
     /// <param name="delimiter"></param>
     /// <returns></returns>
-    public bool MatchDelim(char delimiter) => delimiter == (char)_tokenizer.TType;
+    public bool MatchDelimiter(char delimiter) => delimiter == (char)_tokenizer.TType;
 
     public bool MatchIntConstant() => _tokenizer.TType == StreamTokenizer.TT_NUMBER;
 
@@ -58,13 +58,22 @@ public class Lexer
         _tokenizer.TType == StreamTokenizer.TT_WORD
         && w.Equals(_tokenizer.SVal, StringComparison.OrdinalIgnoreCase);
 
-    public bool IsIdMatch =>
-        _tokenizer.TType == StreamTokenizer.TT_WORD
-        && !_keywords.Contains(_tokenizer.SVal, StringComparer.OrdinalIgnoreCase);
+    public bool IsIdentifierMatch
+    {
+        get
+        {
+            if (_tokenizer.TType == StreamTokenizer.TT_WORD)
+            {
+                return !_keywords.Contains(_tokenizer.SVal, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+    }
 
     public void EatDelim(char c)
     {
-        if (MatchDelim(c))
+        if (MatchDelimiter(c))
         {
             NextToken();
             return;
@@ -104,14 +113,20 @@ public class Lexer
         throw new BadSyntaxException($"Expected keyword {w}");
     }
 
-    public string EatId()
+    public string EatIdentifier()
     {
-        if (IsIdMatch)
+        if (IsIdentifierMatch)
         {
             var s = _tokenizer.SVal ?? string.Empty;
             NextToken();
             return s;
         }
         throw new BadSyntaxException("Expected identifier");
+    }
+
+    public void Dispose()
+    {
+        _tokenizer.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
