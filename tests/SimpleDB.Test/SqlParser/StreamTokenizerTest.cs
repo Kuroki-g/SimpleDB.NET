@@ -27,6 +27,20 @@ public class StreamTokenizerTest
     ];
 
     [Theory]
+    [InlineData("1")]
+    [InlineData("\"1\"")]
+    [InlineData("'1'")]
+    public void Constructor_初期値(string s)
+    {
+        var reader = new StringReader(s);
+        var tokenizer = new SimpleDB.SqlParser.StreamTokenizer(reader);
+
+        Assert.Equal(-4, tokenizer.TType);
+        Assert.Null(tokenizer.SVal);
+        Assert.Equal(0.0, tokenizer.NVal);
+    }
+
+    [Theory]
     [InlineData("+")]
     [InlineData("-")]
     [InlineData("^")]
@@ -35,38 +49,40 @@ public class StreamTokenizerTest
     public void TType_symbols(string s)
     {
         var reader = new StringReader(s);
-        var tokenizer = new StreamTokenizer(reader);
+        var tokenizer = new SimpleDB.SqlParser.StreamTokenizer(reader);
 
         var actual = tokenizer.NextToken();
 
         Assert.Equal(s[0], actual);
+        Assert.Null(tokenizer.SVal);
     }
 
-    private static void PrintCurrentToken(StreamTokenizer tok)
+    [Theory]
+    // [InlineData('\'', "aaaa")]
+    [InlineData('\'', "'aaaa'")]
+    [InlineData('"', "\"aaaa\"")]
+    public void TType_SVal(char c, string s)
     {
-        if (tok.TType == StreamTokenizer.TT_NUMBER)
-        {
-            Console.WriteLine("IntConstant " + (int)tok.NVal);
-        }
-        else if (tok.TType == StreamTokenizer.TT_WORD)
-        {
-            string word = tok.SVal;
-            if (keywords.Contains(word))
-            {
-                Console.WriteLine("Keyword " + word);
-            }
-            else
-            {
-                Console.WriteLine("Id " + word);
-            }
-        }
-        else if (tok.TType == '\'')
-        {
-            Console.WriteLine("StringConstant " + tok.SVal);
-        }
-        else
-        {
-            Console.WriteLine("Delimiter " + (char)tok.TType);
-        }
+        var reader = new StringReader(s);
+        var tokenizer = new SimpleDB.SqlParser.StreamTokenizer(reader);
+
+        var actual1 = tokenizer.NextToken();
+        var actual2 = tokenizer.SVal;
+
+        Assert.Equal(c, actual1);
+        Assert.Equal("aaaa", actual2);
+    }
+
+    [Fact]
+    public void TType_SVal2()
+    {
+        var tokenizer = new SimpleDB.SqlParser.StreamTokenizer("+aaaa+");
+
+        Assert.Equal('+', tokenizer.NextToken());
+        Assert.Null(tokenizer.SVal);
+        Assert.Equal(SimpleDB.SqlParser.StreamTokenizer.TT_WORD, tokenizer.NextToken());
+        Assert.Null("aaaa");
+        Assert.Equal('+', tokenizer.NextToken());
+        Assert.Null(tokenizer.SVal);
     }
 }

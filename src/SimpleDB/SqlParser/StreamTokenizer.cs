@@ -61,7 +61,7 @@ public class StreamTokenizer : IDisposable
     /// </remarks>
     public string? SVal { get; private set; } = null;
 
-    private TextReader _reader { get; set; }
+    private readonly TextReader _reader;
 
     private readonly string[] _tokens;
 
@@ -108,9 +108,7 @@ public class StreamTokenizer : IDisposable
     private int _currentPos = 0;
 
     /// <summary>
-    /// Javaでは推奨されておらず、変わりにStringのsplitメソッドまたはjava.util.regexパッケージが推奨されている。
-    /// 速度面では、StringTokenizerの方が有利らしく、内部の実装が異なるものだと思われる。
-    /// C#では、StringTokenizerが存在しないため、内部的には正規表現を用いたものとしている。
+    /// JavaにおけるStreamTokenizerの実装をある程度行ったもの。
     /// 'A' 〜 'Z'、'a' 〜 'z'、および '\u00A0' 〜 '\u00FF' のバイト値はすべて英字と見なす
     /// '/' はコメント文字
     /// 単一引用 '\'' と二重引用符 ''' は文字列の引用文字
@@ -119,7 +117,7 @@ public class StreamTokenizer : IDisposable
     /// C スタイルおよび C++ スタイルのコメントは認識しない
     /// </summary>
     /// <param name="reader"></param>
-    public StreamTokenizer(TextReader reader)
+    public StreamTokenizer(StringReader reader)
     {
         _reader = reader;
         // merge WhiteSpaces and NEW_LINE
@@ -127,6 +125,13 @@ public class StreamTokenizer : IDisposable
         var targets = WhiteSpaces.Concat(n).ToArray();
         _tokens = reader.ReadToEnd().Split(targets);
     }
+
+    /// <summary>
+    /// StringReaderを呼び出してラップして使用する。
+    /// </summary>
+    /// <param name="s"></param>
+    public StreamTokenizer(string s)
+        : this(new StringReader(s)) { }
 
     /// <summary>
     /// TT_WORD トークンを小文字にするかどうかを 決定する。
