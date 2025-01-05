@@ -484,3 +484,7 @@ $RECYCLE.BIN/
 *.swp
 
 coverage/*
+
+# 現時点ではpublishしていないのでgitignoreに記載しているもの
+_site
+api/*
