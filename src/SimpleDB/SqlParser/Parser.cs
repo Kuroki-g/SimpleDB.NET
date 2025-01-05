@@ -9,7 +9,7 @@ public class Parser(string s)
 
     public string Field()
     {
-        return _lexer.EatId();
+        return _lexer.EatIdentifier();
     }
 
     public Constant Constant =>
@@ -18,7 +18,7 @@ public class Parser(string s)
             : new Constant(_lexer.EatIntConstant());
 
     public Expression Expression =>
-        _lexer.IsIdMatch ? new Expression(Field()) : new Expression(Constant);
+        _lexer.IsIdentifierMatch ? new Expression(Field()) : new Expression(Constant);
 
     public Term Term()
     {
@@ -58,7 +58,7 @@ public class Parser(string s)
     {
         List<string> fields = [];
         fields.Add(Field());
-        while (_lexer.MatchDelim(','))
+        while (_lexer.MatchDelimiter(','))
         {
             _lexer.EatDelim(',');
             fields.AddRange(SelectList());
@@ -69,8 +69,8 @@ public class Parser(string s)
     private IEnumerable<string> TableList()
     {
         List<string> tables = [];
-        tables.Add(_lexer.EatId());
-        while (_lexer.MatchDelim(','))
+        tables.Add(_lexer.EatIdentifier());
+        while (_lexer.MatchDelimiter(','))
         {
             _lexer.EatDelim(',');
             tables.AddRange(TableList());
@@ -128,7 +128,7 @@ public class Parser(string s)
     private CreateTable CreateTable()
     {
         _lexer.EatKeyword("table");
-        var tableName = _lexer.EatId();
+        var tableName = _lexer.EatIdentifier();
         _lexer.EatDelim('(');
         var schema = FieldDefs();
         _lexer.EatDelim(')');
@@ -139,7 +139,7 @@ public class Parser(string s)
     private Schema FieldDefs()
     {
         var schema = FieldDef();
-        if (_lexer.MatchDelim(','))
+        if (_lexer.MatchDelimiter(','))
         {
             _lexer.EatDelim(',');
             schema.AddAll(FieldDefs());
@@ -183,7 +183,7 @@ public class Parser(string s)
     {
         _lexer.EatKeyword("delete");
         _lexer.EatKeyword("from");
-        var table = _lexer.EatId();
+        var table = _lexer.EatIdentifier();
         var predicate = new Predicate();
         if (_lexer.MatchKeyword("where"))
         {
@@ -197,7 +197,7 @@ public class Parser(string s)
     {
         _lexer.EatKeyword("insert");
         _lexer.EatKeyword("into");
-        var table = _lexer.EatId();
+        var table = _lexer.EatIdentifier();
         _lexer.EatDelim('(');
         List<string> fields = FieldList();
         _lexer.EatDelim(')');
@@ -212,7 +212,7 @@ public class Parser(string s)
     {
         List<Constant> list = [];
         list.Add(Constant);
-        if (_lexer.MatchDelim(','))
+        if (_lexer.MatchDelimiter(','))
         {
             _lexer.EatDelim(',');
             list.AddRange(ConstList());
@@ -224,7 +224,7 @@ public class Parser(string s)
     {
         List<string> list = [];
         list.Add(Field());
-        if (_lexer.MatchDelim(','))
+        if (_lexer.MatchDelimiter(','))
         {
             _lexer.EatDelim(',');
             list.AddRange(FieldList());
