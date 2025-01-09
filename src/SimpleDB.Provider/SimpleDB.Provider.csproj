@@ -9,8 +9,8 @@
         <!-- See
         https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/src/csharp/BUILD-INTEGRATION.md -->
         <Protobuf
-            Include="..\Proto\greet.proto"
-            Link="Proto\greet.proto"
+            Include="..\Proto\sim_db.proto"
+            Link="Proto\sim_db.proto"
             Access="public"
             GrpcServices="Client"
         />

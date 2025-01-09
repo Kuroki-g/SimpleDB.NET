@@ -1,7 +1,7 @@
 ﻿namespace SimpleDB.Provider;
 
 using Grpc.Net.Client;
-using GrpcGreeter;
+using SimDbGrpc;
 
 public class SqlClient
 {
@@ -18,6 +18,8 @@ public class SqlClient
             "https://localhost:7279",
             new GrpcChannelOptions { HttpHandler = handler }
         );
-        var client = new Greeter.GreeterClient(channel);
+        var client = new Sql.SqlClient(channel);
+        var req = new SqlRequest { Command = "SELECT * FROM table" };
+        var res = client.CreateCommand(req);
     }
 }
