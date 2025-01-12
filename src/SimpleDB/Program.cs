@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using SimpleDB.Services;
+﻿using SimpleDB.Services;
+using SimpleDB.System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddGrpc();
+
+var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
+builder.Services.AddSingleton<Database>().AddSingleton<ISimpleDbConfig>(dbConfig);
 
 var app = builder.Build();
 

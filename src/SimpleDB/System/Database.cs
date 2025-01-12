@@ -4,10 +4,14 @@ namespace SimpleDB.System;
 
 public sealed class Database
 {
-    // public Database(string fileName, int blocksize, int buffsize)
-    // {
-    //     FileManager = new FileManager(fileName, number1);
-    // }
+    public readonly int BlockSize;
+
+    public Database(ISimpleDbConfig dbConfig)
+    {
+        BlockSize = dbConfig.BlockSize;
+
+        var fm = new FileManager(dbConfig.FileName, BlockSize);
+    }
 
     // public FileManager FileManager;
 }
