@@ -2,6 +2,25 @@
 
 SimpleDB implementation using .NET
 
+## Project Structure
+
+This project contains following .NET projects:
+
+| Project             | Description                                      | License |
+|---------------------|--------------------------------------------------|---------|
+| SimpleDB            | Core SimpleDB implementation                     |Unknown, follow to original author|
+| SimpleDB.Client     | CLI client library for SimpleDB                  |MIT License|
+| Proto               | protobuf code                                    |MIT License|
+| SimpleDB.Provider   | Provider implementation for SimpleDB             |MIT License|
+| Common              | Common utilities and shared code                 |MIT License|
+| Client              | Client-side sample code for SimpleDB.Provider    |MIT License|
+
+SimpleDB Core is rewrite using .NET.
+It is not 100% compatible with original SimpleDB. It is a work in progress.
+The reason I cannot qualify the license of SimpleDB is because it is originally from a book, Database Design and Implementation, 2nd edition by Edward Sciore. I am not sure if I can change license for my project.
+
+Please follow the original author.
+
 ## Status
 
 - [X] 1 Database
