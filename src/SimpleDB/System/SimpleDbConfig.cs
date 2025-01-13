@@ -5,6 +5,8 @@ public interface ISimpleDbConfig
     public int BlockSize { get; }
     public int BufferSize { get; }
     public string FileName { get; }
+
+    public string LogFileName => $"{FileName}.log";
 }
 
 public class SimpleDbConfig(
