@@ -233,14 +233,14 @@ public class Parser(string s)
     }
 }
 
-internal class Insert(string table, List<string> fields, List<Constant> values)
+public class Insert(string table, List<string> fields, List<Constant> values)
 {
     private readonly string _table = table;
     private readonly List<string> _fields = fields;
     private readonly List<Constant> _values = values;
 }
 
-internal class Delete(string table, Predicate predicate)
+public class Delete(string table, Predicate predicate)
 {
     private readonly string _table = table;
     private readonly Predicate _predicate = predicate;
