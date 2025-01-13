@@ -1,3 +1,5 @@
+using SimpleDB.Sql;
+using SimpleDB.SqlParser.Grammar;
 using SimpleDB.Storage;
 using SimpleDB.Tx;
 
@@ -116,5 +118,12 @@ public class TableScan : ITableScan
         _recordPage.Format();
 
         _currentSlot = -1;
+    }
+
+    public Constant GetValue(string fieldName)
+    {
+        return _layout.Schema.Type(fieldName) == Types.INTEGER
+            ? new Constant(GetInt(fieldName))
+            : new Constant(GetString(fieldName));
     }
 }
