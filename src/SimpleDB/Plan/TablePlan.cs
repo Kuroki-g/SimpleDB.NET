@@ -1,11 +1,12 @@
 using SimpleDB.Metadata;
 using SimpleDB.Sql;
+using SimpleDB.SqlParser.Grammar;
 using SimpleDB.Structure;
 using SimpleDB.Tx;
 
 namespace SimpleDB.Plan;
 
-public class TablePlan
+public class TablePlan : IPlan
 {
     private readonly string _tableName;
 
