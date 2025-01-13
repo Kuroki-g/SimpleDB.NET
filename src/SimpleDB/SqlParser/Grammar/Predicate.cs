@@ -32,4 +32,30 @@ public class Predicate
         }
         return factor;
     }
+
+    public Constant? EquatesWithConstant(string fieldName)
+    {
+        foreach (var term in _terms)
+        {
+            var c = term.EquatesWithConstant(fieldName);
+            if (c is not null)
+            {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public string? EquatesWithField(string fieldName)
+    {
+        foreach (var term in _terms)
+        {
+            var c = term.EquatesWithField(fieldName);
+            if (c is not null)
+            {
+                return c;
+            }
+        }
+        return null;
+    }
 }

@@ -14,6 +14,42 @@ public class Term(Expression lhs, Expression rhs)
         return _lhs.Evaluate(scan).Equals(_rhs.Evaluate(scan));
     }
 
+    public Constant? EquatesWithConstant(string fieldName)
+    {
+        // _lhs
+        var isEqualsLhs = _lhs.IsFieldName && _lhs.AsFieldName!.Equals(fieldName);
+        if (isEqualsLhs && !_rhs.IsFieldName)
+        {
+            return _rhs.AsConstant;
+        }
+        // _rhs
+        var isEqualsRhs = _rhs.IsFieldName && _rhs.AsFieldName!.Equals(fieldName);
+        if (isEqualsRhs && !_lhs.IsFieldName)
+        {
+            return _lhs.AsConstant;
+        }
+
+        return null;
+    }
+
+    public string? EquatesWithField(string fieldName)
+    {
+        // _lhs
+        var isEqualsLhs = _lhs.IsFieldName && _lhs.AsFieldName!.Equals(fieldName);
+        if (isEqualsLhs && _rhs.IsFieldName)
+        {
+            return _rhs.AsFieldName;
+        }
+        // _rhs
+        var isEqualsRhs = _rhs.IsFieldName && _rhs.AsFieldName!.Equals(fieldName);
+        if (isEqualsRhs && _lhs.IsFieldName)
+        {
+            return _lhs.AsFieldName;
+        }
+
+        return null;
+    }
+
     public int ReductionFactor(IPlan plan)
     {
         throw new NotImplementedException();
