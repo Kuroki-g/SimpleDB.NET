@@ -81,3 +81,5 @@ Database design  and implementation の9.4 (p246)を参照のこと。
 \end{aligned}
 \end{equation} 
 ```
+
+![Architecture Diagram](./構文木.drawio.svg)
