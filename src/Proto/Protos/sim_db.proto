@@ -6,8 +6,9 @@ package sim_db;
 // See: https://chromium.googlesource.com/external/github.com/grpc/grpc/+/HEAD/src/csharp/BUILD-INTEGRATION.md
 // The greeting service definition.
 service Sql {
+  // 認証用のメソッドは生やせないのか？
   // TODO: 後でsteamをつけて書き換える
-  rpc CreateCommand (SqlRequest) returns (SqlResponse);
+  rpc ExecuteQuery (SqlRequest) returns (SqlResponse);
 }
 
 // The request message containing the user's name.

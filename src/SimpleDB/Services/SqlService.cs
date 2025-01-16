@@ -1,16 +1,20 @@
 using Grpc.Core;
-using Microsoft.Extensions.Logging;
 using SimDbGrpc;
+using SimpleDB.System;
 
 namespace SimpleDB.Services;
 
-public class SqlService(ILogger<SqlService> logger) : SimDbGrpc.Sql.SqlBase
+public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql.SqlBase
 {
+    private readonly Database _db = db;
     private readonly ILogger<SqlService> _logger = logger;
 
-    public override Task<SqlResponse> CreateCommand(SqlRequest request, ServerCallContext context)
+    public override Task<SqlResponse> ExecuteQuery(SqlRequest request, ServerCallContext context)
     {
+        var tx = _db.NewTx();
+
         _logger.LogInformation("Received request: {Command}", request.Command);
-        return base.CreateCommand(request, context);
+        tx.Commit();
+        return base.ExecuteQuery(request, context);
     }
 }
