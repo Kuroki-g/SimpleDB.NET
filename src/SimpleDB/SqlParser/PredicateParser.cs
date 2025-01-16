@@ -1,5 +1,3 @@
-using SimpleDB.SqlParser.Grammar;
-
 namespace SimpleDB.SqlParser;
 
 public class PredicateParser(string s)
@@ -25,7 +23,7 @@ public class PredicateParser(string s)
 
     public void Expression()
     {
-        if (_lexer.IsIdentifierMatch)
+        if (_lexer.MatchIdentifier())
         {
             Field();
         }

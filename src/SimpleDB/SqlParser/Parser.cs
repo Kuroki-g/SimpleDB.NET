@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using SimpleDB.SqlParser.Grammar;
 using SimpleDB.Structure;
 
@@ -18,7 +19,7 @@ public class Parser(string s)
             : new Constant(_lexer.EatIntConstant());
 
     public Expression Expression =>
-        _lexer.IsIdentifierMatch ? new Expression(Field()) : new Expression(Constant);
+        _lexer.MatchIdentifier() ? new Expression(Field()) : new Expression(Constant);
 
     public Term Term()
     {
@@ -235,13 +236,16 @@ public class Parser(string s)
 
 public class Insert(string table, List<string> fields, List<Constant> values)
 {
-    private readonly string _table = table;
-    private readonly List<string> _fields = fields;
-    private readonly List<Constant> _values = values;
+    public readonly string Table = table;
+
+    public readonly ReadOnlyCollection<string> Fields = new(fields);
+
+    public readonly ReadOnlyCollection<Constant> Values = new(values);
 }
 
 public class Delete(string table, Predicate predicate)
 {
-    private readonly string _table = table;
-    private readonly Predicate _predicate = predicate;
+    public readonly string Table = table;
+
+    public readonly Predicate Predicate = predicate;
 }

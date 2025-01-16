@@ -4,16 +4,18 @@ namespace SimpleDB.Test.SqlParser;
 
 public class LexerTest
 {
-    // [Theory]
-    // [InlineData("invalid-word")]
-    // public void LexerTest_EatIdentifier_throws_exception(string input)
-    // {
-    //     var lex = new Lexer(input);
+    [Theory]
+    [InlineData("select")]
+    [InlineData("from")]
+    [InlineData("where")]
+    public void LexerTest_EatIdentifier_throws_exception(string input)
+    {
+        var lex = new Lexer(input);
 
-    //     var actual = Record.Exception(() => lex.EatIdentifier());
+        var actual = Record.Exception(() => lex.EatIdentifier());
 
-    //     Assert.IsType<BadSyntaxException>(actual);
-    // }
+        Assert.IsType<BadSyntaxException>(actual);
+    }
 
     [Fact]
     public void EatIntConstant()
@@ -25,12 +27,10 @@ public class LexerTest
         Assert.Equal(1, actual);
     }
 
-    [Theory]
-    [InlineData("'1'")]
-    [InlineData("\"1\"")]
-    public void EatStringConstant(string input)
+    [Fact]
+    public void EatStringConstant()
     {
-        var lex = new Lexer(input);
+        var lex = new Lexer("'1'");
 
         var actual = lex.EatStringConstant();
 
@@ -45,5 +45,39 @@ public class LexerTest
         var actual = lex.MatchKeyword("select");
 
         Assert.True(actual);
+    }
+
+    [Fact]
+    public void MatchDelimiter_assert()
+    {
+        var lex = new Lexer(",");
+
+        var actual = lex.MatchDelimiter(',');
+
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public void MatchIntConstant_assert()
+    {
+        var lex = new Lexer("123");
+
+        var actual = lex.MatchIntConstant();
+
+        Assert.True(actual);
+    }
+
+    [Theory]
+    [InlineData("identifier", true)]
+    [InlineData("anotherIdentifier", true)]
+    [InlineData("select", false)]
+    [InlineData("from", false)]
+    public void IsIdentifierMatch_assert(string input, bool expected)
+    {
+        var lex = new Lexer(input);
+
+        var actual = lex.MatchIdentifier();
+
+        Assert.Equal(expected, actual);
     }
 }

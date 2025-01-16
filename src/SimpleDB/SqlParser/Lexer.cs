@@ -1,4 +1,6 @@
-﻿namespace SimpleDB.SqlParser;
+﻿using Common;
+
+namespace SimpleDB.SqlParser;
 
 public class Lexer : IDisposable
 {
@@ -58,17 +60,10 @@ public class Lexer : IDisposable
         _tokenizer.TType == StreamTokenizer.TT_WORD
         && w.Equals(_tokenizer.SVal, StringComparison.OrdinalIgnoreCase);
 
-    public bool IsIdentifierMatch
+    public bool MatchIdentifier()
     {
-        get
-        {
-            if (_tokenizer.TType == StreamTokenizer.TT_WORD)
-            {
-                return !_keywords.Contains(_tokenizer.SVal, StringComparer.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
+        return _tokenizer.TType == StreamTokenizer.TT_WORD
+            && !_keywords.Contains(_tokenizer.SVal, StringComparer.OrdinalIgnoreCase);
     }
 
     public void EatDelim(char c)
@@ -115,7 +110,7 @@ public class Lexer : IDisposable
 
     public string EatIdentifier()
     {
-        if (IsIdentifierMatch)
+        if (MatchIdentifier())
         {
             var s = _tokenizer.SVal ?? string.Empty;
             NextToken();
