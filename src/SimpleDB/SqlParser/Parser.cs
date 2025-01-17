@@ -80,7 +80,7 @@ public class Parser(string s)
         return tables;
     }
 
-    public object UpdateCmd()
+    public IUpdateCmd UpdateCmd()
     {
         if (_lexer.MatchKeyword("insert"))
         {
@@ -100,7 +100,7 @@ public class Parser(string s)
         }
     }
 
-    private object Create()
+    private IUpdateCmd Create()
     {
         _lexer.EatKeyword("create");
         if (_lexer.MatchKeyword("table"))
@@ -117,12 +117,12 @@ public class Parser(string s)
         }
     }
 
-    private object CreateIndex()
+    private ICreate CreateIndex()
     {
         throw new NotImplementedException();
     }
 
-    private object CreateView()
+    private ICreate CreateView()
     {
         throw new NotImplementedException();
     }
@@ -176,7 +176,7 @@ public class Parser(string s)
         return schema;
     }
 
-    private object Modify()
+    private IUpdateCmd Modify()
     {
         throw new NotImplementedException();
     }

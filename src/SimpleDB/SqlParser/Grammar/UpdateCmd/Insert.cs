@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace SimpleDB.SqlParser.Grammar.UpdateCmd;
 
-public sealed class Insert(string table, List<string> fields, List<Constant> values)
+public sealed class Insert(string table, List<string> fields, List<Constant> values) : IUpdateCmd
 {
     public readonly string Table = table;
 
