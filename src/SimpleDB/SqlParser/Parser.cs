@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using SimpleDB.SqlParser.Grammar;
+using SimpleDB.SqlParser.Grammar.UpdateCmd;
 using SimpleDB.Structure;
 
 namespace SimpleDB.SqlParser;
@@ -232,20 +233,4 @@ public class Parser(string s)
         }
         return list;
     }
-}
-
-public class Insert(string table, List<string> fields, List<Constant> values)
-{
-    public readonly string Table = table;
-
-    public readonly ReadOnlyCollection<string> Fields = new(fields);
-
-    public readonly ReadOnlyCollection<Constant> Values = new(values);
-}
-
-public class Delete(string table, Predicate predicate)
-{
-    public readonly string Table = table;
-
-    public readonly Predicate Predicate = predicate;
 }

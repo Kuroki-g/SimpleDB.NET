@@ -1,4 +1,5 @@
 using SimpleDB.SqlParser;
+using SimpleDB.SqlParser.Grammar.UpdateCmd;
 
 namespace SimpleDB.Test.SqlParser;
 
