@@ -1,5 +1,6 @@
 using SimpleDB.SqlParser;
 using SimpleDB.SqlParser.Grammar;
+using SimpleDB.SqlParser.Grammar.Create;
 using SimpleDB.SqlParser.Grammar.UpdateCmd;
 using SimpleDB.Tx;
 

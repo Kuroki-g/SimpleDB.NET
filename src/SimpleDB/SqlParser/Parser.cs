@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using SimpleDB.SqlParser.Grammar;
+using SimpleDB.SqlParser.Grammar.Create;
 using SimpleDB.SqlParser.Grammar.UpdateCmd;
 using SimpleDB.Structure;
 
@@ -117,12 +118,12 @@ public class Parser(string s)
         }
     }
 
-    private ICreate CreateIndex()
+    private CreateIndex CreateIndex()
     {
         throw new NotImplementedException();
     }
 
-    private ICreate CreateView()
+    private CreateView CreateView()
     {
         throw new NotImplementedException();
     }

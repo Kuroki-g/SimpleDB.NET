@@ -1,9 +1,6 @@
-using SimpleDB.SqlParser.Grammar.UpdateCmd;
 using SimpleDB.Structure;
 
-namespace SimpleDB.SqlParser.Grammar;
-
-public interface ICreate : IUpdateCmd { }
+namespace SimpleDB.SqlParser.Grammar.Create;
 
 public class CreateTable(Schema schema, string tableName) : ICreate
 {
