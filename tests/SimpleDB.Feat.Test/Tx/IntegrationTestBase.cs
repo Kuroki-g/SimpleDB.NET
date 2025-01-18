@@ -58,4 +58,11 @@ public abstract class IntegrationTestBase : IDisposable
 
         return (tm, tx);
     }
+
+    internal void CreateSampleTable(string tableName, Schema schema)
+    {
+        using var tx = CreateTransaction();
+        var tm = new TableManager(true, tx);
+        tm.CreateTable(tableName, schema, tx);
+    }
 }
