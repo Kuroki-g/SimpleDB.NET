@@ -8,7 +8,10 @@ namespace SimpleDB.Structure;
 /// <summary>
 /// TODO: IEnumerableを実装したほうがよい。
 /// </summary>
-public class TableScan : ITableScan
+public class TableScan
+    : ITableScan,
+        // TODO: UpdateScanの場合ではない場合には大丈夫か？
+        IUpdateScan
 {
     private readonly ITransaction _tx;
 
@@ -60,6 +63,13 @@ public class TableScan : ITableScan
 
     public string GetString(string fieldName) => _recordPage.GetString(_currentSlot, fieldName);
 
+    public Constant GetValue(string fieldName)
+    {
+        return _layout.Schema.Type(fieldName) == Types.INTEGER
+            ? new Constant(GetInt(fieldName))
+            : new Constant(GetString(fieldName));
+    }
+
     public bool HasField(string fieldName) => _layout.Schema.HasField(fieldName);
 
     public void Insert()
@@ -110,6 +120,14 @@ public class TableScan : ITableScan
     public void SetString(string fieldName, string value) =>
         _recordPage.SetString(_currentSlot, fieldName, value);
 
+    public void SetValue(string fieldName, Constant val)
+    {
+        if (_layout.Schema.Type(fieldName) == Types.INTEGER)
+            SetInt(fieldName, (int)val.AsInt()!);
+        else
+            SetString(fieldName, val.AsString()!);
+    }
+
     private void MoveToNewBlock()
     {
         Close();
@@ -118,12 +136,5 @@ public class TableScan : ITableScan
         _recordPage.Format();
 
         _currentSlot = -1;
-    }
-
-    public Constant GetValue(string fieldName)
-    {
-        return _layout.Schema.Type(fieldName) == Types.INTEGER
-            ? new Constant(GetInt(fieldName))
-            : new Constant(GetString(fieldName));
     }
 }
