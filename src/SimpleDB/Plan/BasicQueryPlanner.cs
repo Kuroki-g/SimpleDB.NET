@@ -15,7 +15,7 @@ public class BasicQueryPlanner(IMetadataManager mm) : IQueryPlanner
             .Tables.Select(tableName =>
             {
                 var viewDef = _mm.GetViewDef(tableName, tx);
-                if (viewDef is null)
+                if (viewDef == string.Empty)
                 {
                     return new TablePlan(tx, tableName, _mm);
                 }
