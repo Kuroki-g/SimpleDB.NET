@@ -1,6 +1,7 @@
 using SimpleDB.DataBuffer;
 using SimpleDB.Logging;
 using SimpleDB.Metadata;
+using SimpleDB.Sql;
 using SimpleDB.Storage;
 using SimpleDB.Structure;
 using SimpleDB.Tx;
@@ -64,5 +65,17 @@ public abstract class IntegrationTestBase : IDisposable
         using var tx = CreateTransaction();
         var tm = new TableManager(true, tx);
         tm.CreateTable(tableName, schema, tx);
+        tx.Commit();
+    }
+
+    internal static List<string> GetStrings(IScan scan, string fieldName)
+    {
+        var result = new List<string>();
+        while (scan.Next())
+        {
+            result.Add(scan.GetString(fieldName));
+        }
+
+        return result;
     }
 }
