@@ -1,5 +1,4 @@
 using FakeItEasy;
-using FakeItEasy.Sdk;
 using SimpleDB.Feat.Test.Tx;
 using SimpleDB.Metadata;
 using SimpleDB.Plan;
