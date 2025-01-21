@@ -7,7 +7,7 @@ using SimpleDB.Tx.Recovery;
 
 namespace SimpleDB.Tx;
 
-public class Transaction : ITransaction, IDisposable
+public class Transaction : ITransaction
 {
     private static int _nextNum = 0;
 

@@ -2,7 +2,7 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.Tx;
 
-public interface ITransaction
+public interface ITransaction : IDisposable
 {
     public void Commit();
 
