@@ -10,7 +10,8 @@ builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
 var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-builder.Services.AddSingleton<Database>().AddSingleton<ISimpleDbConfig>(dbConfig);
+var db = new Database(dbConfig);
+builder.Services.AddSingleton(db).AddSingleton<ISimpleDbConfig>(dbConfig);
 
 var app = builder.Build();
 

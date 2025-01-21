@@ -37,10 +37,13 @@ public sealed class Database
             Console.WriteLine("recovering existing database");
             tx.Recover();
         }
+
         // TODO: planner switch
         _mm = new MetadataManager(isNew, tx);
         Planner = CreatePlanner(_mm);
         tx.Commit();
+        tx.Dispose();
+        Console.WriteLine("recovery complete");
     }
 
     private static Planner CreatePlanner(IMetadataManager mm)
