@@ -18,7 +18,19 @@ public class BasicUpdatePlanner(IMetadataManager mm) : IUpdatePlanner
         return 0;
     }
 
-    // TODO: Implement ExecuteCreateView, ExecuteCreateIndex
+    public int ExecuteCreateIndex(CreateIndex cmd, ITransaction tx)
+    {
+        _mm.CreateIndex(cmd.IndexName, cmd.TableName, cmd.FieldName, tx);
+
+        return 0;
+    }
+
+    public int ExecuteCreateView(CreateView cmd, ITransaction tx)
+    {
+        _mm.CreateView(cmd.ViewName, cmd.ViewDef, tx);
+
+        return 0;
+    }
 
     /// <summary>
     /// Execute a delete command
@@ -51,7 +63,6 @@ public class BasicUpdatePlanner(IMetadataManager mm) : IUpdatePlanner
     public int ExecuteInsert(Insert cmd, ITransaction tx)
     {
         var plan = new TablePlan(tx, cmd.Table, _mm);
-        // FIXME: このキャストはおかしい
         var scan = (IUpdateScan)plan.Open();
         scan.Insert();
         for (var i = 0; i < cmd.Fields.Count; i++)
