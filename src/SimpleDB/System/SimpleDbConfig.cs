@@ -6,7 +6,7 @@ public interface ISimpleDbConfig
     public int BufferSize { get; }
     public string FileName { get; }
 
-    public string LogFileName => $"{FileName}.log";
+    public string LogFileName { get; }
 }
 
 public class SimpleDbConfig(
@@ -20,4 +20,6 @@ public class SimpleDbConfig(
     public int BufferSize { get; } = bufferSize;
 
     public string FileName { get; } = fileName;
+
+    public string LogFileName => $"{FileName}.log";
 }
