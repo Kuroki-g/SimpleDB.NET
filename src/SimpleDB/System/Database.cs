@@ -17,13 +17,13 @@ public sealed class Database
 
     public readonly Planner Planner;
 
-    public Database(ISimpleDbConfig dbConfig)
+    public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
     {
         BlockSize = dbConfig.BlockSize;
 
-        _fm = new FileManager(dbConfig.FileName, BlockSize);
-        _lm = new LogManager(_fm, dbConfig.LogFileName);
-        _bm = new BufferManager(_fm, _lm, dbConfig.BufferSize);
+        _fm = fm;
+        _lm = lm;
+        _bm = bm;
 
         var tx = NewTx();
         var isNew = _fm.IsNew;

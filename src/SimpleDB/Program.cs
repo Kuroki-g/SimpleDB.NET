@@ -1,4 +1,7 @@
-﻿using SimpleDB.Services;
+﻿using SimpleDB.DataBuffer;
+using SimpleDB.Logging;
+using SimpleDB.Services;
+using SimpleDB.Storage;
 using SimpleDB.System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +13,17 @@ builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
 var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-var db = new Database(dbConfig);
-builder.Services.AddSingleton(db).AddSingleton<ISimpleDbConfig>(dbConfig);
+
+var fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
+var lm = new LogManager(fm, dbConfig.LogFileName);
+var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+var db = new Database(dbConfig, fm, lm, bm);
+builder
+    .Services.AddSingleton(db)
+    .AddSingleton<ISimpleDbConfig>(dbConfig)
+    .AddSingleton<IFileManager>(fm)
+    .AddSingleton<ILogManager>(lm)
+    .AddSingleton<IBufferManager>(bm);
 
 var app = builder.Build();
 
