@@ -14,4 +14,6 @@ public class RecordId(int blockNumber, int slot)
     }
 
     public override string ToString() => $"[{BlockNumber}, {Slot}]";
+
+    public override int GetHashCode() => base.GetHashCode();
 }
