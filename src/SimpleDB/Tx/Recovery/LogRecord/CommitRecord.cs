@@ -6,16 +6,14 @@ namespace SimpleDB.Tx.Recovery.LogRecord;
 
 public sealed class CommitRecord : ILogRecord
 {
-    private readonly int _txNum;
-
     public TransactionStatus Op => TransactionStatus.COMMIT;
 
-    public int TxNumber => _txNum;
+    public int TxNumber { get; }
 
     public CommitRecord(Page page)
     {
         var tPos = Bytes.Integer;
-        _txNum = page.GetInt(tPos);
+        TxNumber = page.GetInt(tPos);
     }
 
     /// <summary>
@@ -24,7 +22,7 @@ public sealed class CommitRecord : ILogRecord
     /// <param name="tx"></param>
     public void Undo(ITransaction tx) { }
 
-    public override string ToString() => $"<COMMIT {_txNum}>";
+    public override string ToString() => $"<COMMIT {TxNumber}>";
 
     public static int WriteToLog(ILogManager lm, int txNum)
     {
