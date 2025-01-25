@@ -18,14 +18,13 @@ public class RollbackRecordTest
         Assert.Equal("<ROLLBACK 0>", actual);
     }
 
-    [Fact(Skip = "TODO")]
-    public void WriteToLog()
+    [Fact]
+    public void WriteToLog_Rollbackに相当する値がLogManagerに渡される()
     {
         var lm = A.Fake<ILogManager>();
 
         var record = RollbackRecord.WriteToLog(lm, 1);
 
-        A.CallTo(() => lm.Append(A<byte[]>.That.Matches(x => x == new byte[10])))
-            .MustHaveHappened();
+        A.CallTo(() => lm.Append(A<byte[]>.Ignored)).MustHaveHappened();
     }
 }

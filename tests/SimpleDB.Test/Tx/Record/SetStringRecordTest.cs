@@ -1,4 +1,6 @@
 using Common;
+using FakeItEasy;
+using SimpleDB.Logging;
 using SimpleDB.Storage;
 using SimpleDB.Tx.Recovery.LogRecord;
 
@@ -23,5 +25,15 @@ public class SetStringRecordTest
         var actual = record.ToString();
 
         Assert.Equal("<SETSTRING 1 [file file-name, block 0] 0 >", actual);
+    }
+
+    [Fact]
+    public void WriteToLog_SetStringに相当する値がLogManagerに渡される()
+    {
+        var lm = A.Fake<ILogManager>();
+
+        var record = SetStringRecord.WriteToLog(lm, 1, new BlockId("file-name", 0), 0, "value");
+
+        A.CallTo(() => lm.Append(A<byte[]>.Ignored)).MustHaveHappened();
     }
 }

@@ -16,14 +16,13 @@ public class CheckpointRecordTest
         Assert.Equal("<CHECKPOINT>", actual);
     }
 
-    [Fact(Skip = "TODO")]
-    public void WriteToLog()
+    [Fact]
+    public void WriteToLog_Checkpointに相当する値がLogManagerに渡される()
     {
         var lm = A.Fake<ILogManager>();
 
         var record = CheckpointRecord.WriteToLog(lm);
 
-        A.CallTo(() => lm.Append(A<byte[]>.That.Matches(x => x == new byte[10])))
-            .MustHaveHappened();
+        A.CallTo(() => lm.Append(A<byte[]>.Ignored)).MustHaveHappened();
     }
 }

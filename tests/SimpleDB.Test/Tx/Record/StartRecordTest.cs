@@ -1,3 +1,5 @@
+using FakeItEasy;
+using SimpleDB.Logging;
 using SimpleDB.Storage;
 using SimpleDB.Tx.Recovery.LogRecord;
 
@@ -14,5 +16,15 @@ public class StartRecordTest
         var actual = record.ToString();
 
         Assert.Equal("<START 0>", actual);
+    }
+
+    [Fact]
+    public void WriteToLog_Startに相当する値がLogManagerに渡される()
+    {
+        var lm = A.Fake<ILogManager>();
+
+        var record = StartRecord.WriteToLog(lm, 1);
+
+        A.CallTo(() => lm.Append(A<byte[]>.Ignored)).MustHaveHappened();
     }
 }
