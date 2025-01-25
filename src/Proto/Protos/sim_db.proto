@@ -8,7 +8,7 @@ package sim_db;
 service Sql {
   // 認証用のメソッドは生やせないのか？
   // TODO: 後でsteamをつけて書き換える
-  rpc ExecuteQuery (SqlRequest) returns (SqlResponse);
+  rpc CreateCommand (SqlRequest) returns (SqlResponse);
 }
 
 // The request message containing the user's name.

@@ -20,14 +20,14 @@ public class SqlClient : IDisposable
         );
         var client = new Sql.SqlClient(_channel);
         var req = new SqlRequest { Command = "command" };
-        var res = client.ExecuteQuery(req);
+        var res = client.CreateCommand(req);
     }
 
     public void Execute(string command)
     {
         var client = new Sql.SqlClient(_channel);
         var req = new SqlRequest { Command = command };
-        var res = client.ExecuteQuery(req);
+        var res = client.CreateCommand(req);
 
         Console.WriteLine(res?.Message);
     }

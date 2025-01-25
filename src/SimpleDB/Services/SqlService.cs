@@ -9,12 +9,12 @@ public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql
     private readonly Database _db = db;
     private readonly ILogger<SqlService> _logger = logger;
 
-    public override Task<SqlResponse> ExecuteQuery(SqlRequest request, ServerCallContext context)
+    public override Task<SqlResponse> CreateCommand(SqlRequest request, ServerCallContext context)
     {
         var tx = _db.NewTx();
 
         _logger.LogInformation("Received request: {Command}", request.Command);
         tx.Commit();
-        return base.ExecuteQuery(request, context);
+        return base.CreateCommand(request, context);
     }
 }
