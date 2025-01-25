@@ -110,20 +110,25 @@ internal sealed class FileManager : IFileManager
     /// Get handle or add new
     /// WARNING: do not forget to dispose this handle
     /// </summary>
-    /// <param name="filename"></param>
+    /// <param name="fileName"></param>
     /// <returns></returns>
-    private SafeFileHandle GetFileHandle(string filename)
+    private SafeFileHandle GetFileHandle(string fileName)
     {
-        var info = _fileSystem.FileInfo.New(
-            _fileSystem.Path.Combine(_dbDirectory.FullName, filename)
-        );
-        SafeFileHandle? handle = _openFiles.GetValueOrDefault(info.FullName) ?? null;
+        SafeFileHandle? handle = _openFiles.GetValueOrDefault(fileName) ?? null;
         if (handle is not null)
         {
+            if (handle.IsClosed) // handleが閉じられている場合にはアクセスできないので再度開く
+            {
+                _openFiles.Remove(fileName);
+                return GetFileHandle(fileName);
+            }
             return handle;
         }
+        var info = _fileSystem.FileInfo.New(
+            _fileSystem.Path.Combine(_dbDirectory.FullName, fileName)
+        );
         handle = CreateOrSelectFileAndOpenHandle(info, access: FileAccess.ReadWrite);
-        _openFiles[info.FullName] = handle;
+        _openFiles[fileName] = handle;
         return handle;
     }
 
