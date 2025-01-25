@@ -11,6 +11,13 @@ namespace SimpleDB.Feat.Test.Tx;
 
 public abstract class IntegrationTestBase : IDisposable
 {
+    /// <summary>
+    /// Real test project directory.
+    /// </summary>
+    protected readonly string _testProjectDir = Path.GetFullPath(
+        Path.Combine(AppContext.BaseDirectory, "../../../")
+    );
+
     protected readonly string _dir;
 
     protected readonly DirectoryInfo _directoryInfo;

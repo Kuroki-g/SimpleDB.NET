@@ -65,13 +65,23 @@ public class DatabaseTest : IntegrationTestBase
     [Fact]
     public void Initialize_database_can_open_empty_database()
     {
-        // create another directory in order to avoid conflict
+        var dbDir = Path.Combine(_testProjectDir, "System/TestData/simple.db");
         var randomStr = Helper.RandomString(12);
-        var dbDir = $"./mock/{randomStr}";
+        var dbDirForTest = Directory.CreateDirectory(Path.Combine(_dir, randomStr));
+
+        foreach (var file in Directory.GetFiles(dbDir))
+        {
+            var destFile = Path.Combine(_dir, Path.GetFileName(file));
+            File.Copy(file, destFile);
+        }
+
+        // create another directory in order to avoid conflict
+        // dbdir is tests/SimpleDB.Feat.Test/System/TestData/simple.db
+
 
         // Arrange
         var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-        var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var fm = new FileManager(dbDirForTest.FullName, dbConfig.BlockSize);
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
