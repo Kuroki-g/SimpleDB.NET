@@ -46,7 +46,7 @@ public sealed class SetStringRecord : ILogRecord
         tx.Unpin(_blockId);
     }
 
-    public static int WriteToLog(ILogManager lm, int txnum, BlockId blk, int offset, string val)
+    public static int WriteToLog(ILogManager lm, int txNum, BlockId blk, int offset, string val)
     {
         int tPos = Bytes.Integer;
         int fPos = tPos + Bytes.Integer;
@@ -58,7 +58,7 @@ public sealed class SetStringRecord : ILogRecord
 
         var p = new Page(record);
         p.SetInt(0, (int)TransactionStatus.SETSTRING);
-        p.SetInt(tPos, txnum);
+        p.SetInt(tPos, txNum);
         p.SetString(fPos, blk.FileName);
         p.SetInt(bPos, blk.Number);
         p.SetInt(oPos, offset);
