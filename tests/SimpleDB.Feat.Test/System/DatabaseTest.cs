@@ -32,6 +32,60 @@ public class DatabaseTest : IntegrationTestBase
         // Act
 
         // Assert
+        // Assert.Null(result);
+    }
+
+    [Fact]
+    public void Initialize_new_database_can_commit_empty_transaction()
+    {
+        // create another directory in order to avoid conflict
+        var randomStr = Helper.RandomString(12);
+        var dbDir = $"./mock/{randomStr}";
+
+        // Arrange
+        var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
+        var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+
+        var fn = new Action(() =>
+        {
+            var db = new Database(dbConfig, fm, lm, bm);
+            using var tx = db.NewTx();
+            tx.Commit();
+            tx.Dispose();
+        });
+
+        // Act
+        var result = Record.Exception(fn);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void Initialize_database_can_open_empty_database()
+    {
+        // create another directory in order to avoid conflict
+        var randomStr = Helper.RandomString(12);
+        var dbDir = $"./mock/{randomStr}";
+
+        // Arrange
+        var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
+        var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+
+        var fn = new Action(() =>
+        {
+            var db = new Database(dbConfig, fm, lm, bm);
+            using var tx = db.NewTx();
+            tx.Commit();
+            tx.Dispose();
+        });
+
+        // Act
+        var result = Record.Exception(fn);
+
         Assert.Null(result);
     }
 }
