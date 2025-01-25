@@ -30,7 +30,6 @@ public sealed class Database
         if (isNew)
         {
             Console.WriteLine("creating new database");
-            tx.Recover();
         }
         else
         {
