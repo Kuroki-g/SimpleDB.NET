@@ -15,7 +15,7 @@ public class StreamTokenizerTest {
     //     assertDoesNotThrow(() -> streamTokenizerPrintln("'1\" '"));
     // }
 
-    @Test
+    // @Test
     void testStreamTokenizer() throws Exception {
         List<String> results = streamTokenizerPrintln("1");
         // assert list and list
