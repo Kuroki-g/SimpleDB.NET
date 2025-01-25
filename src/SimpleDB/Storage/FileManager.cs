@@ -58,7 +58,7 @@ internal sealed class FileManager : IFileManager
         byte[] bytes = new byte[BlockSize];
         try
         {
-            var handle = GetFile(blockId.FileName);
+            var handle = GetFileHandle(blockId.FileName);
             RandomAccess.Write(handle, new byte[bytes.Length], blockId.Number * BlockSize);
         }
         catch (IOException e)
@@ -74,7 +74,7 @@ internal sealed class FileManager : IFileManager
     {
         try
         {
-            var handle = GetFile(blockId.FileName);
+            var handle = GetFileHandle(blockId.FileName);
             var bytes = new byte[BlockSize];
             var buffer = new Span<byte>(bytes);
             RandomAccess.Read(handle, buffer, blockId.Number * BlockSize);
@@ -91,7 +91,7 @@ internal sealed class FileManager : IFileManager
     {
         try
         {
-            var handle = GetFile(blockId.FileName);
+            var handle = GetFileHandle(blockId.FileName);
             RandomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
         }
         catch (IOException e)
@@ -102,16 +102,17 @@ internal sealed class FileManager : IFileManager
 
     public int Length(string fileName)
     {
-        var handle = GetFile(fileName) ?? throw new IOException($"cannot access {fileName}");
+        var handle = GetFileHandle(fileName) ?? throw new IOException($"cannot access {fileName}");
         return (int)(RandomAccess.GetLength(handle) / BlockSize);
     }
 
     /// <summary>
     /// Get handle or add new
+    /// WARNING: do not forget to dispose this handle
     /// </summary>
     /// <param name="filename"></param>
     /// <returns></returns>
-    private SafeFileHandle GetFile(string filename)
+    private SafeFileHandle GetFileHandle(string filename)
     {
         var info = _fileSystem.FileInfo.New(
             _fileSystem.Path.Combine(_dbDirectory.FullName, filename)
