@@ -22,7 +22,7 @@ public interface ILogRecord
     /// <param name="tx"></param>
     public void Undo(ITransaction tx);
 
-    public static ILogRecord? Create(byte[] record)
+    public static ILogRecord Create(byte[] record)
     {
         var p = new Page(record);
         var status = (TransactionStatus)p.GetInt(0);
@@ -34,7 +34,7 @@ public interface ILogRecord
             TransactionStatus.ROLLBACK => new RollbackRecord(p),
             TransactionStatus.SETINT => new SetIntRecord(p),
             TransactionStatus.SETSTRING => new SetStringRecord(p),
-            _ => null,
+            _ => throw new SystemException("invalid log record type"),
         };
     }
 }
