@@ -6,20 +6,18 @@ namespace SimpleDB.Tx.Recovery.LogRecord;
 
 public sealed class SetIntRecord : ILogRecord
 {
-    private readonly int _txNum;
-
     public TransactionStatus Op => TransactionStatus.SETINT;
 
     private readonly int _offset;
 
     private readonly int _value;
 
-    private BlockId _blockId;
+    private readonly BlockId _blockId;
 
     public SetIntRecord(Page page)
     {
         var tPos = Bytes.Integer;
-        _txNum = page.GetInt(tPos);
+        TxNumber = page.GetInt(tPos);
 
         var fPos = tPos + Bytes.Integer;
         var fileName = page.GetString(fPos);
@@ -35,9 +33,9 @@ public sealed class SetIntRecord : ILogRecord
         _value = page.GetInt(vPos);
     }
 
-    public override string ToString() => $"<SETINT {_txNum} {_blockId} {_offset} {_value}>";
+    public override string ToString() => $"<SETINT {TxNumber} {_blockId} {_offset} {_value}>";
 
-    public int TxNumber => _txNum;
+    public int TxNumber { get; }
 
     public void Undo(ITransaction tx)
     {
