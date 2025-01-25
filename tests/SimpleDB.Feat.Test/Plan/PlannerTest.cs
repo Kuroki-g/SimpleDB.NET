@@ -23,7 +23,7 @@ public class PlannerTest : IntegrationTestBase
 
         var plan = planner.CreatePlan("select B from T1 where A=10", tx);
 
-        Assert.IsType<SelectPlan>(plan);
+        Assert.IsType<ProjectPlan>(plan);
     }
 
     [Fact]

@@ -32,10 +32,8 @@ public class BasicQueryPlanner(IMetadataManager mm) : IQueryPlanner
             plan = new ProductPlan(plan, p);
         }
 
-        plan = new SelectPlan(plan, query.Predicate);
+        var selectPlan = new SelectPlan(plan, query.Predicate);
 
-        plan = new ProjectPlan(plan, query.Fields);
-
-        return plan;
+        return new ProjectPlan(selectPlan, query.Fields);
     }
 }
