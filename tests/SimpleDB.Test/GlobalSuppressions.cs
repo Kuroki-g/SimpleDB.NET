@@ -5,5 +5,17 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleDB.Test.Storage.PageTest.SetBytes_GetBytes(System.Int32,System.Int32,System.Byte[],System.Byte[],System.String)")]
-[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleDB.Test.Storage.PageTest.SetBytes_GetBytes_バイト列での値のsetとgetが出来る(System.Int32,System.Int32,System.Byte[],System.Byte[],System.String)")]
+[assembly: SuppressMessage(
+    "Usage",
+    "xUnit1026:Theory methods should use all of their parameters",
+    Justification = "<Pending>",
+    Scope = "member",
+    Target = "~M:SimpleDB.Test.Storage.PageTest.SetBytes_GetBytes(System.Int32,System.Int32,System.Byte[],System.Byte[],System.String)"
+)]
+[assembly: SuppressMessage(
+    "Style",
+    "IDE0060:Remove unused parameter",
+    Justification = "<Pending>",
+    Scope = "member",
+    Target = "~M:SimpleDB.Test.Storage.PageTest.SetBytes_GetBytes_バイト列での値のsetとgetが出来る(System.Int32,System.Int32,System.Byte[],System.Byte[],System.String)"
+)]
