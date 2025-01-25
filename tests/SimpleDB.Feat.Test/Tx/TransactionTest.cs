@@ -49,4 +49,18 @@ public class TransactionTest : IntegrationTestBase
         transaction2.SetString(blockId, 40, "two", true);
         transaction2.Commit();
     }
+
+    [Fact]
+    public void Transaction_empty_commit_no_error()
+    {
+        var fm = new FileManager(_dir, 0x90);
+        var lm = new LogManager(fm, "log-file");
+        var bm = new BufferManager(fm, lm, 1);
+
+        var transaction = new Transaction(fm, lm, bm);
+
+        var result = Record.Exception(() => transaction.Commit());
+
+        Assert.Null(result);
+    }
 }
