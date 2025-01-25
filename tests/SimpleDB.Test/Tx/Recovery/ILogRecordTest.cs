@@ -4,7 +4,7 @@ using SimpleDB.Tx.Recovery.LogRecord;
 
 namespace SimpleDB.Test.Tx.Recovery;
 
-public class RecordFactoryTest
+public class ILogRecordTest
 {
     [Fact]
     public void Create_ShouldReturnCheckpointRecord_WhenStatusIsCheckpoint()
@@ -15,7 +15,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.CHECKPOINT);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<CheckpointRecord>(record);
@@ -30,7 +30,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.START);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<StartRecord>(record);
@@ -45,7 +45,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.COMMIT);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<CommitRecord>(record);
@@ -60,7 +60,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.ROLLBACK);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<RollbackRecord>(record);
@@ -75,7 +75,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.SETINT);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<SetIntRecord>(record);
@@ -90,7 +90,7 @@ public class RecordFactoryTest
         page.SetInt(0, (int)TransactionStatus.SETSTRING);
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.IsType<SetStringRecord>(record);
@@ -105,7 +105,7 @@ public class RecordFactoryTest
         page.SetInt(0, -1); // Unknown status
 
         // Act
-        var record = RecordFactory.Create(bytes);
+        var record = ILogRecord.Create(bytes);
 
         // Assert
         Assert.Null(record);

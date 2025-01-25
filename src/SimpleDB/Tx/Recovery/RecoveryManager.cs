@@ -101,7 +101,7 @@ public class RecoveryManager : IRecoveryManager
     {
         foreach (var record in _lm)
         {
-            var logRecord = RecordFactory.Create(record);
+            var logRecord = ILogRecord.Create(record);
             if (logRecord?.TxNumber == _txNum)
             {
                 if (logRecord.Op == TransactionStatus.START)
@@ -116,7 +116,7 @@ public class RecoveryManager : IRecoveryManager
         foreach (var record in _lm)
         {
             List<int> finishedTxs = [];
-            var logRecord = RecordFactory.Create(record) ?? throw new InvalidDataException();
+            var logRecord = ILogRecord.Create(record) ?? throw new InvalidDataException();
             if (logRecord.Op == TransactionStatus.CHECKPOINT)
                 return;
 

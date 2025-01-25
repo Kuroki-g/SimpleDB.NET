@@ -1,4 +1,4 @@
-using SimpleDB.Logging;
+using SimpleDB.Storage;
 
 namespace SimpleDB.Tx.Recovery.LogRecord;
 
@@ -21,4 +21,20 @@ public interface ILogRecord
     /// </summary>
     /// <param name="tx"></param>
     public void Undo(ITransaction tx);
+
+    public static ILogRecord? Create(byte[] record)
+    {
+        var p = new Page(record);
+        var status = (TransactionStatus)p.GetInt(0);
+        return status switch
+        {
+            TransactionStatus.CHECKPOINT => new CheckpointRecord(),
+            TransactionStatus.START => new StartRecord(p),
+            TransactionStatus.COMMIT => new CommitRecord(p),
+            TransactionStatus.ROLLBACK => new RollbackRecord(p),
+            TransactionStatus.SETINT => new SetIntRecord(p),
+            TransactionStatus.SETSTRING => new SetStringRecord(p),
+            _ => null,
+        };
+    }
 }
