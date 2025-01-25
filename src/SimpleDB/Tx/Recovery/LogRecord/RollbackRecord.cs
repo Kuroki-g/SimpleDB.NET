@@ -6,16 +6,14 @@ namespace SimpleDB.Tx.Recovery.LogRecord;
 
 public sealed class RollbackRecord : ILogRecord
 {
-    private readonly int _txNum;
-
     public TransactionStatus Op => TransactionStatus.ROLLBACK;
 
-    public int TxNumber => _txNum;
+    public int TxNumber { get; }
 
     public RollbackRecord(Page page)
     {
         var tPos = Bytes.Integer;
-        _txNum = page.GetInt(tPos);
+        TxNumber = page.GetInt(tPos);
     }
 
     /// <summary>
@@ -24,7 +22,7 @@ public sealed class RollbackRecord : ILogRecord
     /// <param name="tx"></param>
     public void Undo(ITransaction tx) { }
 
-    public override string ToString() => $"<ROLLBACK {_txNum}>";
+    public override string ToString() => $"<ROLLBACK {TxNumber}>";
 
     public static int WriteToLog(ILogManager lm, int txNum)
     {
