@@ -11,7 +11,7 @@ internal sealed class BufferManager : IBufferManager
 
     private int _availableBufferCount;
 
-    private static int _MAX_TIME = 1000; // 1 seconds
+    private static readonly int _MAX_TIME = 1000; // 1 seconds
 
     public BufferManager(IFileManager fileManager, ILogManager logManager, int bufferCount)
     {
@@ -26,15 +26,13 @@ internal sealed class BufferManager : IBufferManager
     [MethodImpl(MethodImplOptions.Synchronized)]
     public void FlushAll(int txNumber)
     {
-        _bufferPool.ForEach(
-            (buffer) =>
+        foreach (var buffer in _bufferPool)
+        {
+            if (buffer.ModifyingTx == txNumber)
             {
-                if (buffer.ModifiyingTx == txNumber)
-                {
-                    buffer.Flush();
-                }
+                buffer.Flush();
             }
-        );
+        }
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]

@@ -28,7 +28,7 @@ public class Buffer
 
     public bool IsPinned => _pins > 0;
 
-    public int ModifiyingTx => _txNumber;
+    public int ModifyingTx => _txNumber;
 
     public void SetModified(int txNumber, int lsn)
     {
