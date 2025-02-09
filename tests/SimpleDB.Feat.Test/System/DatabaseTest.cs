@@ -98,4 +98,38 @@ public class DatabaseTest : IntegrationTestBase
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public void CreateTable_can_create_new_table()
+    {
+        var db = new Database(new SimpleDbConfig());
+        using var tx = db.NewTx();
+        var schema = CreateSchema();
+
+        // Act
+        db.Mm.CreateTable("sample_table", schema, tx);
+        tx.Commit();
+
+        // Assert
+        var table = db.Mm.GetLayout("sample_table", tx);
+        Assert.NotNull(table);
+    }
+
+    [Fact]
+    public void Recover_can_recover_uncommitted_table_schema()
+    {
+        var db = new Database(new SimpleDbConfig());
+        using var tx = db.NewTx();
+        var schema = CreateSchema();
+
+        // Act
+        db.Mm.CreateTable("sample_table", schema, tx);
+        // recover without commit
+        tx.Recover();
+
+        // Assert
+        using var tx2 = db.NewTx();
+        var table = db.Mm.GetLayout("sample_table", tx2);
+        Assert.Null(table);
+    }
 }
