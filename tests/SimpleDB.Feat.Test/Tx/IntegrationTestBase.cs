@@ -11,6 +11,8 @@ namespace SimpleDB.Feat.Test.Tx;
 
 public abstract class IntegrationTestBase : IDisposable
 {
+    protected readonly Random _random;
+
     /// <summary>
     /// Real test project directory.
     /// </summary>
@@ -27,6 +29,8 @@ public abstract class IntegrationTestBase : IDisposable
         var randomStr = Helper.RandomString(12);
         _dir = $"./mock/{randomStr}";
         _directoryInfo = new(_dir);
+
+        _random = new Random();
 
         Helper.InitializeDir(_directoryInfo);
     }

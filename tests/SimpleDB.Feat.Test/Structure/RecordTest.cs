@@ -5,13 +5,6 @@ namespace SimpleDB.Feat.Test.Structure;
 
 public class RecordTest : IntegrationTestBase
 {
-    private readonly Random _random;
-
-    public RecordTest()
-    {
-        _random = new Random();
-    }
-
     [Fact]
     public void RecordTest1()
     {
