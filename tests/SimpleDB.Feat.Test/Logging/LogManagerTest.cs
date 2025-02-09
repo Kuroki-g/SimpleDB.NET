@@ -11,7 +11,7 @@ public class LogManagerTest : IntegrationTestBase
     public void Constructor_new_log_file_no_error()
     {
         var fileName = "log-file";
-        var expectedFilePath = Path.Combine(new DirectoryInfo(_dir).FullName, fileName);
+        var expectedFilePath = Path.Combine(new DirectoryInfo(_dir).Name, fileName);
 
         var fm = new FileManager(_dir, 400);
 
