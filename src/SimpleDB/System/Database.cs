@@ -21,20 +21,22 @@ public sealed class Database
 
     public readonly Planner Planner;
 
+    /// <summary>
+    /// 常に新しいDBを作成する場合に用いるコンストラクタ。
+    /// </summary>
+    /// <param name="dbConfig"></param>
     internal Database(ISimpleDbConfig dbConfig)
     {
-        BlockSize = dbConfig.BlockSize;
-
         _fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
         _lm = new LogManager(_fm, dbConfig.LogFileName);
         _bm = new BufferManager(_fm, _lm, dbConfig.BufferSize);
 
+        BlockSize = dbConfig.BlockSize;
         Mm = new MetadataManager(true, NewTx());
         Planner = CreatePlanner(Mm);
     }
 
     public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
-        : this(dbConfig)
     {
         _fm = fm;
         _lm = lm;
@@ -52,6 +54,7 @@ public sealed class Database
             tx.Recover();
         }
 
+        BlockSize = dbConfig.BlockSize;
         // TODO: planner switch
         Mm = new MetadataManager(isNew, tx);
         Planner = CreatePlanner(Mm);
