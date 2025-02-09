@@ -9,9 +9,9 @@ namespace SimpleDB.Tx;
 
 public class Transaction : ITransaction
 {
-    private static int _nextNum = 0;
+    private static int s_nextNum = 0;
 
-    private static readonly int _END_OF_FILE = -1;
+    private static readonly int END_OF_FILE = -1;
 
     private readonly IFileManager _fm;
 
@@ -25,7 +25,7 @@ public class Transaction : ITransaction
 
     private readonly BufferBoard _bufferBoard;
 
-    private int _txNumber;
+    private readonly int _txNumber;
 
     public Transaction(IFileManager fm, ILogManager lm, IBufferManager bm)
     {
@@ -41,13 +41,13 @@ public class Transaction : ITransaction
     [MethodImpl(MethodImplOptions.Synchronized)]
     private static int NextTxNumber()
     {
-        _nextNum++;
-        return _nextNum;
+        s_nextNum++;
+        return s_nextNum;
     }
 
     public BlockId Append(string fileName)
     {
-        var dummyBlock = new BlockId(fileName, _END_OF_FILE);
+        var dummyBlock = new BlockId(fileName, END_OF_FILE);
         _cm.ExclusiveLock(dummyBlock);
         return _fm.Append(fileName);
     }
@@ -143,7 +143,7 @@ public class Transaction : ITransaction
 
     public int Size(string fileName)
     {
-        var dummyBlock = new BlockId(fileName, _END_OF_FILE);
+        var dummyBlock = new BlockId(fileName, END_OF_FILE);
         _cm.SharedLock(dummyBlock);
 
         return _fm.Length(fileName);
