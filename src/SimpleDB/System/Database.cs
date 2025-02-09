@@ -10,17 +10,32 @@ namespace SimpleDB.System;
 public sealed class Database
 {
     public readonly int BlockSize;
+
     private readonly IFileManager _fm;
+
     private readonly ILogManager _lm;
+
     private readonly IBufferManager _bm;
-    private readonly IMetadataManager _mm;
+
+    internal readonly IMetadataManager Mm;
 
     public readonly Planner Planner;
 
-    public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
+    internal Database(ISimpleDbConfig dbConfig)
     {
         BlockSize = dbConfig.BlockSize;
 
+        _fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
+        _lm = new LogManager(_fm, dbConfig.LogFileName);
+        _bm = new BufferManager(_fm, _lm, dbConfig.BufferSize);
+
+        Mm = new MetadataManager(true, NewTx());
+        Planner = CreatePlanner(Mm);
+    }
+
+    public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
+        : this(dbConfig)
+    {
         _fm = fm;
         _lm = lm;
         _bm = bm;
@@ -38,8 +53,8 @@ public sealed class Database
         }
 
         // TODO: planner switch
-        _mm = new MetadataManager(isNew, tx);
-        Planner = CreatePlanner(_mm);
+        Mm = new MetadataManager(isNew, tx);
+        Planner = CreatePlanner(Mm);
         tx.Commit();
         tx.Dispose();
         Console.WriteLine("recovery complete");
