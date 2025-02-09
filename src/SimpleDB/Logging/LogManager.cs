@@ -23,9 +23,8 @@ internal sealed class LogManager : ILogManager
     private readonly IFileManager _fm;
     private readonly string _logFile;
     private readonly Page _logPage;
-    private BlockId _currentBlock;
 
-    internal BlockId CurrentBlock => _currentBlock;
+    internal BlockId CurrentBlock { get; private set; }
 
     private int _latestLsn = 0;
 
@@ -46,12 +45,12 @@ internal sealed class LogManager : ILogManager
         int logSize = fm.Length(logFile);
         if (logSize == 0)
         {
-            _currentBlock = AppendNewBlock();
+            CurrentBlock = AppendNewBlock();
         }
         else
         {
-            _currentBlock = new BlockId(logFile, logSize - 1);
-            fm.Read(_currentBlock, _logPage);
+            CurrentBlock = new BlockId(logFile, logSize - 1);
+            fm.Read(CurrentBlock, _logPage);
         }
     }
 
@@ -70,7 +69,7 @@ internal sealed class LogManager : ILogManager
         if (boundary - bytesNeeded < Bytes.Integer) // 必要なサイズに満たない場合
         {
             Flush(); // 次のブロックに移動する。
-            _currentBlock = AppendNewBlock();
+            CurrentBlock = AppendNewBlock();
             boundary = _logPage.GetInt(0);
         }
 
@@ -107,14 +106,14 @@ internal sealed class LogManager : ILogManager
 
     private void Flush()
     {
-        _fm.Write(_currentBlock, _logPage);
+        _fm.Write(CurrentBlock, _logPage);
         _lastSavedLsn = _latestLsn;
     }
 
     public IEnumerator<byte[]> GetEnumerator()
     {
         Flush();
-        return new LogEnumerator(_fm, _currentBlock);
+        return new LogEnumerator(_fm, CurrentBlock);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
