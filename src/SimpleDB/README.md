@@ -12,5 +12,9 @@ Use SimpleDB.Provider for connection.
 Sample is Client directory.
 
 ```bash
-grpcurl -insecure -d '{ "command":"select * from t1" }' localhost:7279 sim_db.Sql.ExecuteQuery
+grpcurl -insecure localhost:7279 list sim_db.Sql
+```
+
+```bash
+grpcurl -insecure -d '{ "command":"select * from t1" }' localhost:7279 sim_db.Sql.CreateCommand
 ```
