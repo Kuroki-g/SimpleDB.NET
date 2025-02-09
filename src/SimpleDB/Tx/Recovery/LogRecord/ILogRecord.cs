@@ -24,6 +24,10 @@ public interface ILogRecord
 
     public static ILogRecord Create(byte[] record)
     {
+        if (record.Length == 0)
+        {
+            return new CheckpointRecord(); // is it ok?
+        }
         var p = new Page(record);
         var status = (TransactionStatus)p.GetInt(0);
         return status switch
