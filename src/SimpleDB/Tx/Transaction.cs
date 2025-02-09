@@ -25,15 +25,15 @@ public class Transaction : ITransaction
 
     private readonly BufferBoard _bufferBoard;
 
-    private readonly int _txNumber;
+    internal int TxNumber { get; }
 
     public Transaction(IFileManager fm, ILogManager lm, IBufferManager bm)
     {
         _fm = fm;
         _bm = bm;
-        _txNumber = NextTxNumber();
+        TxNumber = NextTxNumber();
         _lm = lm;
-        _rm = new RecoveryManager(this, _txNumber, _lm, _bm);
+        _rm = new RecoveryManager(this, TxNumber, _lm, _bm);
         _cm = new ConcurrencyManager();
         _bufferBoard = new BufferBoard(_bm);
     }
@@ -105,7 +105,7 @@ public class Transaction : ITransaction
 
     public void Recover()
     {
-        _bm.FlushAll(_txNumber);
+        _bm.FlushAll(TxNumber);
         _rm.Recover();
     }
 
@@ -122,7 +122,7 @@ public class Transaction : ITransaction
         }
         var page = buffer.Contents;
         page.SetInt(offset, value);
-        buffer.SetModified(_txNumber, lsn);
+        buffer.SetModified(TxNumber, lsn);
     }
 
     public void SetString(BlockId blockId, int offset, string value, bool okToLog)
@@ -138,7 +138,7 @@ public class Transaction : ITransaction
         }
         var page = buffer.Contents;
         page.SetString(offset, value);
-        buffer.SetModified(_txNumber, lsn);
+        buffer.SetModified(TxNumber, lsn);
     }
 
     public int Size(string fileName)
