@@ -1,6 +1,7 @@
 using SimpleDB.Storage;
 using SimpleDB.Tx.Recovery;
 using SimpleDB.Tx.Recovery.LogRecord;
+using TestRecord = Xunit.Record;
 
 namespace SimpleDB.Test.Tx.Recovery;
 
@@ -105,9 +106,9 @@ public class ILogRecordTest
         page.SetInt(0, -1); // Unknown status
 
         // Act
-        var record = ILogRecord.Create(bytes);
+        var record = TestRecord.Exception(() => ILogRecord.Create(bytes));
 
         // Assert
-        Assert.Null(record);
+        Assert.IsType<SystemException>(record);
     }
 }
