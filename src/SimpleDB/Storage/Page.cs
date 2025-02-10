@@ -46,7 +46,13 @@ public sealed class Page : IDisposable
     /// <returns></returns>
     public int GetInt(int offset)
     {
-        _stream.Seek(offset, SeekOrigin.Begin);
+        var _ = offset >= 0 ? offset : 0;
+        if (_ >= _stream.Length)
+        {
+            throw new ArgumentOutOfRangeException(offset.ToString());
+        }
+
+        _stream.Seek(_, SeekOrigin.Begin);
         return _reader.ReadInt32();
     }
 
