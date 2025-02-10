@@ -36,8 +36,8 @@ public class BlockIdTest
         var blockId = new BlockId(one.Item1, one.Item2);
         var anotherBlockId = new BlockId(another.Item1, another.Item2);
 
-        var acutual = blockId.Equals(anotherBlockId);
+        var actual = blockId.Equals(anotherBlockId);
 
-        Assert.Equal(expected, acutual);
+        Assert.Equal(expected, actual);
     }
 }
