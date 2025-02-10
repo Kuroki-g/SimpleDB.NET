@@ -11,7 +11,7 @@ public sealed class Page : IDisposable
 
     private readonly BinaryReader _reader;
 
-    private bool _disposed = false;
+    internal bool IsDisposed = false;
 
 #pragma warning disable CA2211 // Non-constant fields should not be visible
     public static Encoding CHARSET = Encoding.UTF8; // UTF-32のほうがいいかもしれない。
@@ -149,7 +149,7 @@ public sealed class Page : IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (!IsDisposed)
         {
             if (disposing)
             {
@@ -161,7 +161,7 @@ public sealed class Page : IDisposable
 
             // アンマネージドリソースがあれば解放 (Pageクラスにはない)
 
-            _disposed = true;
+            IsDisposed = true;
         }
     }
 

@@ -128,4 +128,38 @@ public class PageTest
 
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void Dispose_IsCalled_WithUsingStatement()
+    {
+        // Arrange (準備)
+        var blockSize = 4096;
+        Page page;
+
+        // Act (実行)
+        using (page = new Page(blockSize))
+        {
+            // 何か Page を使う処理 (ここでは省略)
+        }
+
+        // Assert (検証)
+        Assert.True(page.IsDisposed, "Dispose() was not called.");
+    }
+
+    [Fact]
+    public void Dispose_CanBeCalledMultipleTimes()
+    {
+        // Arrange
+        var blockSize = 4096;
+        var page = new Page(blockSize);
+
+        // Act
+        page.Dispose();
+        var actual = Record.Exception(() => page.Dispose());
+
+        // Assert
+        Assert.True(page.IsDisposed, "Dispose() was not called.");
+        // 例外が発生しないことを確認
+        Assert.Null(actual);
+    }
 }
