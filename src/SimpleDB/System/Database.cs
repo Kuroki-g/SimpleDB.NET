@@ -7,7 +7,7 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.System;
 
-public sealed class Database
+public sealed class Database : IDisposable
 {
     public readonly int BlockSize;
 
@@ -20,6 +20,8 @@ public sealed class Database
     internal readonly IMetadataManager Mm;
 
     public readonly Planner Planner;
+
+    internal bool IsDisposed = false;
 
     /// <summary>
     /// 常に新しいDBを作成する場合に用いるコンストラクタ。
@@ -73,5 +75,40 @@ public sealed class Database
     public ITransaction NewTx()
     {
         return new Transaction(Fm, _lm, _bm);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!IsDisposed)
+        {
+            if (disposing)
+            {
+                if (_bm is IDisposable disposable_bm)
+                {
+                    disposable_bm.Dispose();
+                }
+                if (_lm is IDisposable disposable_lm)
+                {
+                    disposable_lm.Dispose();
+                }
+                if (Fm is IDisposable disposable_fm)
+                {
+                    disposable_fm.Dispose();
+                }
+            }
+
+            IsDisposed = true;
+        }
+    }
+
+    ~Database()
+    {
+        Dispose();
     }
 }
