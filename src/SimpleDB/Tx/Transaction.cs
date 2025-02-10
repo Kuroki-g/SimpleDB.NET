@@ -7,7 +7,7 @@ using SimpleDB.Tx.Recovery;
 
 namespace SimpleDB.Tx;
 
-public class Transaction : ITransaction
+public class Transaction : ITransaction, IDisposable
 {
     private static int s_nextNum = 0;
 
@@ -26,6 +26,9 @@ public class Transaction : ITransaction
     private readonly BufferBoard _bufferBoard;
 
     internal int TxNumber { get; }
+
+    // Dispose パターンに必要なフィールド
+    private bool _disposed = false;
 
     public Transaction(IFileManager fm, ILogManager lm, IBufferManager bm)
     {
@@ -155,9 +158,49 @@ public class Transaction : ITransaction
     /// <param name="blockId"></param>
     public void Unpin(BlockId blockId) => _bufferBoard.Unpin(blockId);
 
+    // Public implementation of Dispose pattern callable by consumers.
     public void Dispose()
     {
+        Dispose(true);
         GC.SuppressFinalize(this);
-        Fm.Dispose();
+    }
+
+    // Protected implementation of Dispose pattern.
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            if (Rm is IDisposable disposableRm)
+            {
+                disposableRm.Dispose();
+            }
+            if (Cm is IDisposable disposableCm)
+            {
+                disposableCm?.Dispose();
+            }
+            if (_bufferBoard is IDisposable disposableBufferBoard)
+            {
+                disposableBufferBoard?.Dispose();
+            }
+            if (Lm is IDisposable disposableLm)
+            {
+                disposableLm?.Dispose();
+            }
+            if (Bm is IDisposable disposableBm)
+            {
+                disposableBm?.Dispose();
+            }
+            if (Fm is IDisposable disposableFm)
+            {
+                disposableFm?.Dispose();
+            }
+        }
+
+        _disposed = true;
     }
 }
