@@ -11,6 +11,8 @@ public sealed class Page : IDisposable
 
     private readonly BinaryReader _reader;
 
+    private bool _disposed = false;
+
 #pragma warning disable CA2211 // Non-constant fields should not be visible
     public static Encoding CHARSET = Encoding.UTF8; // UTF-32のほうがいいかもしれない。
 #pragma warning restore CA2211 // Non-constant fields should not be visible
@@ -141,8 +143,30 @@ public sealed class Page : IDisposable
 
     public void Dispose()
     {
-        _writer.Dispose();
-        _reader.Dispose();
-        _stream.Close();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // マネージドリソースの解放
+                _writer.Dispose(); // BinaryWriterをDispose
+                _reader.Dispose(); // BinaryReaderをDispose
+                _stream.Dispose(); // MemoryStreamをDispose (Close()ではなくDispose()を推奨)
+            }
+
+            // アンマネージドリソースがあれば解放 (Pageクラスにはない)
+
+            _disposed = true;
+        }
+    }
+
+    ~Page()
+    {
+        Dispose(false);
     }
 }
