@@ -34,7 +34,7 @@ public class BufferTest
     }
 
     [Fact]
-    public void Block_AssignToBlock_requied_to_set_block()
+    public void Block_AssignToBlock_required_to_set_block()
     {
         var fm = A.Fake<IFileManager>();
         A.CallTo(() => fm.BlockSize).Returns(0x0F);
