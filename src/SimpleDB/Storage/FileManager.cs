@@ -4,8 +4,11 @@ using Microsoft.Win32.SafeHandles;
 
 namespace SimpleDB.Storage;
 
-internal sealed class FileManager : IFileManager
+internal sealed class FileManager : IFileManager, IDisposable
 {
+    private static FileManager? _instance;
+    private static readonly object _lock = new();
+
     readonly IFileSystem _fileSystem;
 
     private readonly IDirectoryInfo _dbDirectory;
@@ -18,7 +21,8 @@ internal sealed class FileManager : IFileManager
 
     public bool IsNew { get; private set; }
 
-    public FileManager(string dbDirectory, int blockSize, IFileSystem? fileSystem = null)
+    // Private constructor to prevent external instantiation
+    private FileManager(string dbDirectory, int blockSize, IFileSystem? fileSystem = null)
     {
         if (blockSize <= 0)
             throw new InvalidOperationException("block size must be larger than zero");
@@ -42,6 +46,25 @@ internal sealed class FileManager : IFileManager
                 fileInfo.Delete();
             }
         }
+    }
+
+    // Public static method to get the instance
+    public static FileManager GetInstance(
+        FileManagerConfig? config = null,
+        IFileSystem? fileSystem = null
+    )
+    {
+        // Double-checked locking for thread safety
+        if (_instance == null)
+        {
+            ArgumentNullException.ThrowIfNull(config);
+            lock (_lock)
+            {
+                _instance ??= new FileManager(config.DbDirectory, config.BlockSize, fileSystem);
+            }
+        }
+        // すでに存在している場合はディレクトリとブロックサイズの変更は無視する。
+        return _instance;
     }
 
     /// <summary>
@@ -152,11 +175,39 @@ internal sealed class FileManager : IFileManager
         return File.OpenHandle(info.FullName, mode, access, share, options, preallocationSize);
     }
 
+    // Dispose pattern
+    private bool _disposed = false;
+
     public void Dispose()
     {
-        foreach (var pair in _openFiles)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!_disposed)
         {
-            pair.Value.Dispose();
+            if (disposing)
+            {
+                // Dispose managed resources (if any)
+                foreach (var pair in _openFiles)
+                {
+                    pair.Value.Dispose();
+                }
+                _openFiles.Clear();
+            }
+
+            // Release unmanaged resources (if any)
+            // (none in this case)
+
+            _disposed = true;
         }
+    }
+
+    // Finalizer (if needed)
+    ~FileManager()
+    {
+        Dispose(false);
     }
 }

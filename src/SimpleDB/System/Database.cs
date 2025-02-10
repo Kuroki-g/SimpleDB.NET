@@ -29,7 +29,14 @@ public sealed class Database : IDisposable
     /// <param name="dbConfig"></param>
     internal Database(ISimpleDbConfig dbConfig)
     {
-        Fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
+        Fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbConfig.FileName,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         Lm = new LogManager(Fm, dbConfig.LogFileName);
         Bm = new BufferManager(Fm, Lm, dbConfig.BufferSize);
 

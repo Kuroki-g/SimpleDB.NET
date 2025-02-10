@@ -13,17 +13,19 @@ builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
 var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-
-using var fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
-var lm = new LogManager(fm, dbConfig.LogFileName);
-var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
-var db = new Database(dbConfig, fm, lm, bm);
-builder
-    .Services.AddSingleton(db)
-    .AddSingleton<ISimpleDbConfig>(dbConfig)
-    .AddSingleton<IFileManager>(fm)
-    .AddSingleton<ILogManager>(lm)
-    .AddSingleton<IBufferManager>(bm);
+using var fm = FileManager.GetInstance(
+    new FileManagerConfig()
+    {
+        DbDirectory = dbConfig.FileName, // TODO: この定義が違うのでみなおす。
+        FileName = dbConfig.FileName,
+        BlockSize = dbConfig.BlockSize,
+    }
+);
+builder.Services.AddSingleton<ISimpleDbConfig>(dbConfig).AddSingleton<IFileManager>(fm);
+var lm = new LogManager(FileManager.GetInstance(), dbConfig.LogFileName);
+var bm = new BufferManager(FileManager.GetInstance(), lm, dbConfig.BufferSize);
+var db = new Database(dbConfig, FileManager.GetInstance(), lm, bm);
+builder.Services.AddSingleton(db).AddSingleton<ILogManager>(lm).AddSingleton<IBufferManager>(bm);
 
 var app = builder.Build();
 
