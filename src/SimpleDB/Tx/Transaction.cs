@@ -13,15 +13,15 @@ public class Transaction : ITransaction
 
     private static readonly int END_OF_FILE = -1;
 
-    private readonly IFileManager _fm;
+    internal readonly IFileManager Fm;
 
-    private readonly ILogManager _lm;
+    internal readonly ILogManager Lm;
 
-    private readonly IBufferManager _bm;
+    internal readonly IBufferManager Bm;
 
-    private readonly IRecoveryManager _rm;
+    internal readonly IRecoveryManager Rm;
 
-    private readonly IConcurrencyManager _cm;
+    internal readonly IConcurrencyManager Cm;
 
     private readonly BufferBoard _bufferBoard;
 
@@ -29,13 +29,13 @@ public class Transaction : ITransaction
 
     public Transaction(IFileManager fm, ILogManager lm, IBufferManager bm)
     {
-        _fm = fm;
-        _bm = bm;
+        Fm = fm;
+        Bm = bm;
         TxNumber = NextTxNumber();
-        _lm = lm;
-        _rm = new RecoveryManager(this, TxNumber, _lm, _bm);
-        _cm = new ConcurrencyManager();
-        _bufferBoard = new BufferBoard(_bm);
+        Lm = lm;
+        Rm = new RecoveryManager(this, TxNumber, Lm, Bm);
+        Cm = new ConcurrencyManager();
+        _bufferBoard = new BufferBoard(Bm);
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
@@ -48,26 +48,26 @@ public class Transaction : ITransaction
     public BlockId Append(string fileName)
     {
         var dummyBlock = new BlockId(fileName, END_OF_FILE);
-        _cm.ExclusiveLock(dummyBlock);
-        return _fm.Append(fileName);
+        Cm.ExclusiveLock(dummyBlock);
+        return Fm.Append(fileName);
     }
 
-    public int AvailableBuffers() => _bm.Available();
+    public int AvailableBuffers() => Bm.Available();
 
-    public int BlockSize() => _fm.BlockSize;
+    public int BlockSize() => Fm.BlockSize;
 
     public void Commit()
     {
-        _rm.Commit();
-        _cm.Release();
+        Rm.Commit();
+        Cm.Release();
         _bufferBoard.UnpinAll();
         // add logger if requied.
     }
 
     public void Rollback()
     {
-        _rm.Rollback();
-        _cm.Release();
+        Rm.Rollback();
+        Cm.Release();
         _bufferBoard.UnpinAll();
         // add logger
     }
@@ -80,7 +80,7 @@ public class Transaction : ITransaction
     /// <returns></returns>
     public int GetInt(BlockId blockId, int offset)
     {
-        _cm.ExclusiveLock(blockId);
+        Cm.ExclusiveLock(blockId);
         var buffer =
             _bufferBoard.GetBuffer(blockId)
             ?? throw new BufferAbortException("buffer was not found.");
@@ -89,7 +89,7 @@ public class Transaction : ITransaction
 
     public string GetString(BlockId blockId, int offset)
     {
-        _cm.ExclusiveLock(blockId);
+        Cm.ExclusiveLock(blockId);
         var buffer =
             _bufferBoard.GetBuffer(blockId)
             ?? throw new BufferAbortException("buffer was not found.");
@@ -105,20 +105,20 @@ public class Transaction : ITransaction
 
     public void Recover()
     {
-        _bm.FlushAll(TxNumber);
-        _rm.Recover();
+        Bm.FlushAll(TxNumber);
+        Rm.Recover();
     }
 
     public void SetInt(BlockId blockId, int offset, int value, bool okToLog)
     {
-        _cm.ExclusiveLock(blockId);
+        Cm.ExclusiveLock(blockId);
         var buffer =
             _bufferBoard.GetBuffer(blockId)
             ?? throw new BufferAbortException("buffer was not found.");
         var lsn = -1;
         if (okToLog)
         {
-            lsn = _rm.SetInt(buffer, offset, value);
+            lsn = Rm.SetInt(buffer, offset, value);
         }
         var page = buffer.Contents;
         page.SetInt(offset, value);
@@ -127,14 +127,14 @@ public class Transaction : ITransaction
 
     public void SetString(BlockId blockId, int offset, string value, bool okToLog)
     {
-        _cm.ExclusiveLock(blockId);
+        Cm.ExclusiveLock(blockId);
         var buffer =
             _bufferBoard.GetBuffer(blockId)
             ?? throw new BufferAbortException("buffer was not found.");
         var lsn = -1;
         if (okToLog)
         {
-            lsn = _rm.SetString(buffer, offset, value);
+            lsn = Rm.SetString(buffer, offset, value);
         }
         var page = buffer.Contents;
         page.SetString(offset, value);
@@ -144,9 +144,9 @@ public class Transaction : ITransaction
     public int Size(string fileName)
     {
         var dummyBlock = new BlockId(fileName, END_OF_FILE);
-        _cm.SharedLock(dummyBlock);
+        Cm.SharedLock(dummyBlock);
 
-        return _fm.Length(fileName);
+        return Fm.Length(fileName);
     }
 
     /// <summary>
@@ -158,6 +158,6 @@ public class Transaction : ITransaction
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _fm.Dispose();
+        Fm.Dispose();
     }
 }
