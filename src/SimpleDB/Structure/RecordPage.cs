@@ -4,12 +4,14 @@ using SimpleDB.Tx;
 
 namespace SimpleDB.Structure;
 
-public class RecordPage
+public class RecordPage : IDisposable
 {
     private readonly ITransaction _tx;
     private readonly Layout _layout;
 
     public BlockId BlockId { get; }
+
+    private bool _disposed = false;
 
     public RecordPage(ITransaction tx, BlockId blockId, Layout layout)
     {
@@ -120,4 +122,25 @@ public class RecordPage
     private bool IsValidSlot(int slot) => Offset(slot + 1) <= _tx.BlockSize();
 
     private int Offset(int slot) => slot * _layout.SlotSize;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _tx.Dispose();
+        }
+
+        _disposed = true;
+    }
 }
