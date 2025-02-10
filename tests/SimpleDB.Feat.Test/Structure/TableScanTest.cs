@@ -6,13 +6,6 @@ namespace SimpleDB.Feat.Test.Structure;
 
 public class TableScanTest : IntegrationTestBase
 {
-    private readonly Random _random;
-
-    public TableScanTest()
-    {
-        _random = new Random();
-    }
-
     [Fact]
     public void TableScan_can_insert_int_to_table()
     {
