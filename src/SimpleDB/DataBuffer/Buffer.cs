@@ -9,8 +9,6 @@ public class Buffer : IDisposable
 
     private readonly ILogManager _lm;
 
-    private int _txNumber = -1;
-
     private int _lsn = -1;
 
     private int _pins = 0;
@@ -30,11 +28,11 @@ public class Buffer : IDisposable
 
     public bool IsPinned => _pins > 0;
 
-    public int ModifyingTx => _txNumber;
+    public int ModifyingTx { get; private set; } = -1;
 
     public void SetModified(int txNumber, int lsn)
     {
-        _txNumber = txNumber;
+        ModifyingTx = txNumber;
         if (lsn >= 0)
         {
             _lsn = lsn;
@@ -51,7 +49,7 @@ public class Buffer : IDisposable
 
     internal void Flush()
     {
-        if (_txNumber < 0)
+        if (ModifyingTx < 0)
             return;
 
         _lm.Flush(_lsn);
@@ -60,7 +58,7 @@ public class Buffer : IDisposable
             throw new InvalidOperationException("Block must be allocated before write contents.");
         }
         _fm.Write(Block, Contents);
-        _txNumber = -1;
+        ModifyingTx = -1;
     }
 
     internal void Pin()
