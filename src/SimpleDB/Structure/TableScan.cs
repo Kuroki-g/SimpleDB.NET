@@ -58,7 +58,12 @@ public class TableScan
 
     public void Close()
     {
-        _tx.Unpin(RecordPage.BlockId);
+        if (_recordPage != null)
+        {
+            _tx.Unpin(RecordPage.BlockId);
+            _recordPage.Dispose(); // Closeしたら初期化する。
+            _recordPage = null; // 明示的にnullを代入する。
+        }
     }
 
     public int GetInt(string fieldName) => RecordPage.GetInt(_currentSlot, fieldName);
