@@ -18,7 +18,7 @@ public interface ILogManager : IEnumerable<byte[]>
     public void Flush(int lsn);
 }
 
-internal sealed class LogManager : ILogManager
+internal sealed class LogManager : ILogManager, IDisposable
 {
     private readonly IFileManager _fm;
     private readonly string _logFile;
@@ -29,6 +29,9 @@ internal sealed class LogManager : ILogManager
     private int _latestLsn = 0;
 
     private int _lastSavedLsn = 0;
+
+    // Dispose パターンに必要なフィールド
+    private bool _disposed = false; // Track whether Dispose has been called.
 
     /// <summary>
     /// もしログファイルが存在しない場合には新しくログファイルを設定する。
@@ -66,7 +69,7 @@ internal sealed class LogManager : ILogManager
         int boundary = _logPage.GetInt(0);
         int recordSize = logRecord.Length;
         int bytesNeeded = recordSize + Bytes.Integer;
-        if (boundary - bytesNeeded < Bytes.Integer) // 必要なサイズに満たない場合
+        if (boundary - bytesNeeded < Bytes.Integer)
         {
             Flush(); // 次のブロックに移動する。
             CurrentBlock = AppendNewBlock();
@@ -117,4 +120,33 @@ internal sealed class LogManager : ILogManager
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    // Protected implementation of Dispose pattern.
+    private void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _logPage.Dispose();
+            // fm
+            if (_fm is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
+            Flush();
+        }
+
+        _disposed = true;
+    }
 }
