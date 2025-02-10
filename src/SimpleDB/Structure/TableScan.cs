@@ -9,7 +9,8 @@ namespace SimpleDB.Structure;
 /// TODO: IEnumerableを実装したほうがよい。
 /// </summary>
 public class TableScan
-    : ITableScan,
+    : IDisposable,
+        ITableScan,
         // TODO: UpdateScanの場合ではない場合には大丈夫か？
         IUpdateScan
 {
@@ -21,6 +22,8 @@ public class TableScan
 
     private readonly string _fileName;
     private int _currentSlot;
+
+    private bool _disposed = false;
 
     public static string RealFileName(string tableName) => $"{tableName}.tbl";
 
@@ -35,7 +38,8 @@ public class TableScan
         }
         else
         {
-            MoveToBlock(0); // TODO: beforeFirstを呼ぶべきではないか？
+            // NOTE: beforeFirstは呼び出しと同じことをしているので呼び出し不要
+            MoveToBlock(0);
         }
     }
 
@@ -53,7 +57,8 @@ public class TableScan
     {
         if (_recordPage is not null)
         {
-            _tx.Unpin(_recordPage.BlockId);
+            //_tx.Unpin(_recordPage.BlockId);  // UnpinはDispose時に行うように変更
+            _recordPage.Dispose(); // RecordPageをDispose
         }
     }
 
@@ -136,5 +141,28 @@ public class TableScan
         _recordPage.Format();
 
         _currentSlot = -1;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            // Closeメソッドを呼び出して、確実に_recordPageをDisposeし、Unpinする。
+            Close();
+            _tx?.Dispose();
+        }
+
+        _disposed = true;
     }
 }
