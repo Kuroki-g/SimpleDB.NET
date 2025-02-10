@@ -13,9 +13,9 @@ public sealed class Database : IDisposable
 
     internal readonly IFileManager Fm;
 
-    private readonly ILogManager _lm;
+    internal readonly ILogManager Lm;
 
-    private readonly IBufferManager _bm;
+    internal readonly IBufferManager Bm;
 
     internal readonly IMetadataManager Mm;
 
@@ -30,8 +30,8 @@ public sealed class Database : IDisposable
     internal Database(ISimpleDbConfig dbConfig)
     {
         Fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
-        _lm = new LogManager(Fm, dbConfig.LogFileName);
-        _bm = new BufferManager(Fm, _lm, dbConfig.BufferSize);
+        Lm = new LogManager(Fm, dbConfig.LogFileName);
+        Bm = new BufferManager(Fm, Lm, dbConfig.BufferSize);
 
         BlockSize = dbConfig.BlockSize;
         Mm = new MetadataManager(true, NewTx());
@@ -41,8 +41,8 @@ public sealed class Database : IDisposable
     public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
     {
         Fm = fm;
-        _lm = lm;
-        _bm = bm;
+        Lm = lm;
+        Bm = bm;
 
         var tx = NewTx();
         var isNew = Fm.IsNew;
@@ -74,7 +74,7 @@ public sealed class Database : IDisposable
 
     public ITransaction NewTx()
     {
-        return new Transaction(Fm, _lm, _bm);
+        return new Transaction(Fm, Lm, Bm);
     }
 
     public void Dispose()
@@ -89,11 +89,11 @@ public sealed class Database : IDisposable
         {
             if (disposing)
             {
-                if (_bm is IDisposable disposable_bm)
+                if (Bm is IDisposable disposable_bm)
                 {
                     disposable_bm.Dispose();
                 }
-                if (_lm is IDisposable disposable_lm)
+                if (Lm is IDisposable disposable_lm)
                 {
                     disposable_lm.Dispose();
                 }
