@@ -19,7 +19,14 @@ public class DatabaseTest : IntegrationTestBase
 
         // Arrange
         var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-        var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
@@ -65,7 +72,14 @@ public class DatabaseTest : IntegrationTestBase
         InitializeAndStoreRecords(dbDir, dbConfig);
 
         // Assert
-        using var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
@@ -86,7 +100,14 @@ public class DatabaseTest : IntegrationTestBase
 
     private void InitializeAndStoreRecords(string dbDir, SimpleDbConfig dbConfig)
     {
-        using var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
@@ -120,7 +141,14 @@ public class DatabaseTest : IntegrationTestBase
 
         // Arrange
         var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-        var fm = new FileManager(dbDir, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
@@ -153,7 +181,14 @@ public class DatabaseTest : IntegrationTestBase
 
         // Arrange
         var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-        using var fm = new FileManager(dbDirForTest.FullName, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
@@ -190,7 +225,14 @@ public class DatabaseTest : IntegrationTestBase
 
         // Arrange
         var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
-        var fm = new FileManager(dbDirForTest.FullName, dbConfig.BlockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = dbDir,
+                FileName = dbConfig.FileName,
+                BlockSize = dbConfig.BlockSize,
+            }
+        );
         var lm = new LogManager(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 

@@ -12,7 +12,14 @@ public class LogManagerTest : IntegrationTestBase
     {
         var fileName = "log-file";
 
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
 
         var exception = Record.Exception(() => new LogManager(fm, fileName));
 
@@ -26,12 +33,26 @@ public class LogManagerTest : IntegrationTestBase
         var fileName = "log-file";
 
         // create log file
-        var _fm = new FileManager(_dir, 400);
+        var _fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
         var _lm = new LogManager(_fm, fileName);
         LoggingTestHelper.CreateSampleLogRecords(_lm, 1, 35);
         _fm.Dispose(); // disposeして参照を破棄する。
 
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
 
         var exception = Record.Exception(() => new LogManager(fm, fileName));
 
@@ -42,7 +63,14 @@ public class LogManagerTest : IntegrationTestBase
     public void Append_new_log_file_no_error()
     {
         var fileName = "log-file";
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
 
         var lm = new LogManager(fm, fileName);
         var logRecord = LoggingTestHelper.CreateLogRecord("first-record", 1);
@@ -55,8 +83,14 @@ public class LogManagerTest : IntegrationTestBase
     public void Append_multiple_time()
     {
         var fileName = "log-file";
-        var fm = new FileManager(_dir, 0x80);
-
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 0x80,
+            }
+        );
         var lm = new LogManager(fm, fileName);
         for (int i = 0; i < 100; i++)
         {
@@ -71,7 +105,15 @@ public class LogManagerTest : IntegrationTestBase
     public void GetEnumerator_empty_file()
     {
         var fileName = "log-file";
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
+
         var lm = new LogManager(fm, fileName);
 
         var actual = LoggingTestHelper.GetLogRecords(lm);
@@ -83,7 +125,15 @@ public class LogManagerTest : IntegrationTestBase
     public void CreateSample_GetRecords()
     {
         var fileName = "log-file";
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = fileName,
+                BlockSize = 400,
+            }
+        );
+
         var lm = new LogManager(fm, fileName);
 
         var actual = LoggingTestHelper.CreateSampleLogRecords(lm, 1, 35);

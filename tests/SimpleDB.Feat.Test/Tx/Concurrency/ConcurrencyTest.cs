@@ -15,7 +15,14 @@ public class ConcurrencyTest : IntegrationTestBase
         var blockSize = 400;
         var bufferCount = 3;
         var logFile = "log-file";
-        var fm = new FileManager(_dir, blockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = "fileName",
+                BlockSize = blockSize,
+            }
+        );
         var lm = new LogManager(fm, logFile);
         var bm = new BufferManager(fm, lm, bufferCount);
         var txA = new Transaction(fm, lm, bm);

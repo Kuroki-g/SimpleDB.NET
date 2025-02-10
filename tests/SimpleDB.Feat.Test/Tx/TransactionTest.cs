@@ -12,7 +12,14 @@ public class TransactionTest : IntegrationTestBase
     [Fact]
     public void Transaction_commit_okToLog_false()
     {
-        var fm = new FileManager(_dir, 0x90);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = "fileName",
+                BlockSize = 0x90,
+            }
+        );
         var lm = new LogManager(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 
@@ -29,7 +36,14 @@ public class TransactionTest : IntegrationTestBase
     [Fact]
     public void Transaction_commit_okToLog_true()
     {
-        var fm = new FileManager(_dir, 0x90);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = "fileName",
+                BlockSize = 0x90,
+            }
+        );
         var lm = new LogManager(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 
@@ -53,7 +67,14 @@ public class TransactionTest : IntegrationTestBase
     [Fact]
     public void Transaction_empty_commit_no_error()
     {
-        var fm = new FileManager(_dir, 0x90);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = "fileName",
+                BlockSize = 0x90,
+            }
+        );
         var lm = new LogManager(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 

@@ -47,7 +47,14 @@ public abstract class IntegrationTestBase : IDisposable
     /// <returns></returns>
     public Transaction CreateTransaction()
     {
-        var fm = new FileManager(_dir, 0x320);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = "fileName",
+                BlockSize = 0x320,
+            }
+        );
         var lm = new LogManager(fm, "simpledb.log");
         var bm = new BufferManager(fm, lm, 8);
 
