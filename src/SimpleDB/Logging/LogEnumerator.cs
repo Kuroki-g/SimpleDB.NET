@@ -4,7 +4,7 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.Logging;
 
-internal sealed class LogEnumerator : IEnumerator<byte[]>
+internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
 {
     private readonly IFileManager _fm;
 
@@ -13,6 +13,8 @@ internal sealed class LogEnumerator : IEnumerator<byte[]>
     private readonly Page _page;
 
     private int _currentPos;
+
+    private bool _disposed = false;
 
     public LogEnumerator(IFileManager fm, BlockId blockId)
     {
@@ -29,7 +31,23 @@ internal sealed class LogEnumerator : IEnumerator<byte[]>
 
     public void Dispose()
     {
-        _page.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _page.Dispose();
+        }
+
+        _disposed = true;
     }
 
     public bool MoveNext()
@@ -44,7 +62,9 @@ internal sealed class LogEnumerator : IEnumerator<byte[]>
             _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1);
             MoveToBlock(_blockId);
         }
-        _currentPos += Bytes.Integer + Current.Length;
+
+        // TODO: _currentPos += sizeof(int) + Current.Length;の方が良いかもしれない。
+        _currentPos += Bytes.Integer + Current.Length; //変更前
         return true;
     }
 
