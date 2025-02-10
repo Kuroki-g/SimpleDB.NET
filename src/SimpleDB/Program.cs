@@ -14,7 +14,7 @@ builder.Services.AddGrpcReflection();
 
 var dbConfig = new SimpleDbConfig(blockSize: 4096, bufferSize: 4096, fileName: "simple.db");
 
-var fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
+using var fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
 var lm = new LogManager(fm, dbConfig.LogFileName);
 var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 var db = new Database(dbConfig, fm, lm, bm);
