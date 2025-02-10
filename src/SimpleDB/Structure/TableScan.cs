@@ -18,7 +18,10 @@ public class TableScan
 
     private readonly Layout _layout;
 
-    private RecordPage _recordPage;
+    private RecordPage? _recordPage = null;
+
+    private RecordPage RecordPage =>
+        _recordPage ?? throw new InvalidOperationException("RecordPage is not initialized.");
 
     private readonly string _fileName;
     private int _currentSlot;
@@ -55,18 +58,14 @@ public class TableScan
 
     public void Close()
     {
-        if (_recordPage is not null)
-        {
-            //_tx.Unpin(_recordPage.BlockId);  // UnpinはDispose時に行うように変更
-            _recordPage.Dispose(); // RecordPageをDispose
-        }
+        _tx.Unpin(RecordPage.BlockId);
     }
 
-    public int GetInt(string fieldName) => _recordPage.GetInt(_currentSlot, fieldName);
+    public int GetInt(string fieldName) => RecordPage.GetInt(_currentSlot, fieldName);
 
-    public RecordId GetRecordId() => new(_recordPage.BlockId.Number, _currentSlot);
+    public RecordId GetRecordId() => new(RecordPage.BlockId.Number, _currentSlot);
 
-    public string GetString(string fieldName) => _recordPage.GetString(_currentSlot, fieldName);
+    public string GetString(string fieldName) => RecordPage.GetString(_currentSlot, fieldName);
 
     public Constant GetValue(string fieldName)
     {
@@ -79,7 +78,7 @@ public class TableScan
 
     public void Insert()
     {
-        _currentSlot = _recordPage.InsertAfter(_currentSlot);
+        _currentSlot = RecordPage.InsertAfter(_currentSlot);
         while (_currentSlot < 0)
         {
             if (AtLastBlock())
@@ -88,13 +87,13 @@ public class TableScan
             }
             else
             {
-                MoveToBlock(_recordPage.BlockId.Number + 1);
+                MoveToBlock(RecordPage.BlockId.Number + 1);
             }
-            _currentSlot = _recordPage.InsertAfter(_currentSlot);
+            _currentSlot = RecordPage.InsertAfter(_currentSlot);
         }
     }
 
-    public void Delete() => _recordPage.Delete(_currentSlot);
+    public void Delete() => RecordPage.Delete(_currentSlot);
 
     public void MoveToRecordId(RecordId recordId)
     {
@@ -106,24 +105,24 @@ public class TableScan
 
     public bool Next()
     {
-        _currentSlot = _recordPage.NextAfter(_currentSlot);
+        _currentSlot = RecordPage.NextAfter(_currentSlot);
         while (_currentSlot < 0)
         {
             if (AtLastBlock())
                 return false;
-            MoveToBlock(_recordPage.BlockId.Number + 1);
-            _currentSlot = _recordPage.NextAfter(_currentSlot);
+            MoveToBlock(RecordPage.BlockId.Number + 1);
+            _currentSlot = RecordPage.NextAfter(_currentSlot);
         }
         return true;
     }
 
-    private bool AtLastBlock() => _recordPage.BlockId.Number == _tx.Size(_fileName) - 1;
+    private bool AtLastBlock() => RecordPage.BlockId.Number == _tx.Size(_fileName) - 1;
 
     public void SetInt(string fieldName, int value) =>
-        _recordPage.SetInt(_currentSlot, fieldName, value);
+        RecordPage.SetInt(_currentSlot, fieldName, value);
 
     public void SetString(string fieldName, string value) =>
-        _recordPage.SetString(_currentSlot, fieldName, value);
+        RecordPage.SetString(_currentSlot, fieldName, value);
 
     public void SetValue(string fieldName, Constant val)
     {
@@ -160,6 +159,7 @@ public class TableScan
         {
             // Closeメソッドを呼び出して、確実に_recordPageをDisposeし、Unpinする。
             Close();
+            RecordPage.Dispose();
             _tx?.Dispose();
         }
 
