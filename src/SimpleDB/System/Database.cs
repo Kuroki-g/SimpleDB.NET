@@ -11,7 +11,7 @@ public sealed class Database
 {
     public readonly int BlockSize;
 
-    private readonly IFileManager _fm;
+    internal readonly IFileManager Fm;
 
     private readonly ILogManager _lm;
 
@@ -27,9 +27,9 @@ public sealed class Database
     /// <param name="dbConfig"></param>
     internal Database(ISimpleDbConfig dbConfig)
     {
-        _fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
-        _lm = new LogManager(_fm, dbConfig.LogFileName);
-        _bm = new BufferManager(_fm, _lm, dbConfig.BufferSize);
+        Fm = new FileManager(dbConfig.FileName, dbConfig.BlockSize);
+        _lm = new LogManager(Fm, dbConfig.LogFileName);
+        _bm = new BufferManager(Fm, _lm, dbConfig.BufferSize);
 
         BlockSize = dbConfig.BlockSize;
         Mm = new MetadataManager(true, NewTx());
@@ -38,12 +38,12 @@ public sealed class Database
 
     public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
     {
-        _fm = fm;
+        Fm = fm;
         _lm = lm;
         _bm = bm;
 
         var tx = NewTx();
-        var isNew = _fm.IsNew;
+        var isNew = Fm.IsNew;
         if (isNew)
         {
             Console.WriteLine("creating new database");
@@ -72,6 +72,6 @@ public sealed class Database
 
     public ITransaction NewTx()
     {
-        return new Transaction(_fm, _lm, _bm);
+        return new Transaction(Fm, _lm, _bm);
     }
 }
