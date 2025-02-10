@@ -3,7 +3,7 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.DataBuffer;
 
-public class Buffer
+public class Buffer : IDisposable
 {
     private readonly IFileManager _fm;
 
@@ -14,6 +14,8 @@ public class Buffer
     private int _lsn = -1;
 
     private int _pins = 0;
+
+    private bool _disposed = false; // Dispose済みフラグ
 
     public Page Contents { get; init; }
 
@@ -69,5 +71,41 @@ public class Buffer
     internal void Unpin()
     {
         _pins--;
+    }
+
+    // Public Disposeメソッド
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    // Protected Disposeメソッド (パターン)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // マネージドリソースの解放
+                Contents.Dispose(); // PageオブジェクトをDispose
+
+                if (_fm is IDisposable disposableFm)
+                {
+                    disposableFm.Dispose();
+                }
+                if (_lm is IDisposable disposableLm)
+                {
+                    disposableLm.Dispose();
+                }
+            }
+
+            _disposed = true;
+        }
+    }
+
+    ~Buffer()
+    {
+        Dispose(false);
     }
 }
