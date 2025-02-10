@@ -28,7 +28,7 @@ public interface ILogRecord
         {
             return new CheckpointRecord(); // is it ok?
         }
-        var p = new Page(record);
+        using var p = new Page(record);
         var status = (TransactionStatus)p.GetInt(0);
         return status switch
         {

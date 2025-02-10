@@ -62,7 +62,7 @@ public sealed class SetIntRecord : ILogRecord
         var vPos = oPos + Bytes.Integer;
 
         var record = new byte[vPos + Bytes.Integer];
-        var page = new Page(record);
+        using var page = new Page(record);
         page.SetInt(0, (int)TransactionStatus.SETINT);
         page.SetInt(tPos, txNum);
         page.SetString(fPos, blockId.FileName);

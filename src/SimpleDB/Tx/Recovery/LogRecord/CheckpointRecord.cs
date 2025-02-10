@@ -20,7 +20,7 @@ public sealed class CheckpointRecord : ILogRecord
     {
         var record = new byte[Bytes.Integer];
 
-        var p = new Page(record);
+        using var p = new Page(record);
         p.SetInt(0, (int)TransactionStatus.CHECKPOINT);
 
         return lm.Append(record);

@@ -30,7 +30,7 @@ public sealed class StartRecord : ILogRecord
     {
         byte[] record = new byte[2 * Bytes.Integer];
 
-        var p = new Page(record);
+        using var p = new Page(record);
         p.SetInt(0, (int)TransactionStatus.START);
         p.SetInt(Bytes.Integer, txNum);
 

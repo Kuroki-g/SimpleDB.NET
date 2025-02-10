@@ -28,7 +28,7 @@ public sealed class RollbackRecord : ILogRecord
     {
         byte[] record = new byte[2 * Bytes.Integer];
 
-        var p = new Page(record);
+        using var p = new Page(record);
         p.SetInt(0, (int)TransactionStatus.ROLLBACK);
         p.SetInt(Bytes.Integer, txNum);
 
