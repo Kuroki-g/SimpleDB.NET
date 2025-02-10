@@ -11,13 +11,12 @@ public class LogManagerTest : IntegrationTestBase
     public void Constructor_new_log_file_no_error()
     {
         var fileName = "log-file";
-        var expectedFilePath = Path.Combine(new DirectoryInfo(_dir).Name, fileName);
 
         var fm = new FileManager(_dir, 400);
 
         var exception = Record.Exception(() => new LogManager(fm, fileName));
 
-        Assert.Equal([expectedFilePath], fm.OpenedFiles); // Create new and it was opened.
+        Assert.Equal([fileName], fm.OpenedFiles);
         Assert.Null(exception);
     }
 
