@@ -23,7 +23,7 @@ public class ConcurrencyTest : IntegrationTestBase
                 BlockSize = blockSize,
             }
         );
-        var lm = new LogManager(fm, logFile);
+        var lm = LogManager.GetInstance(fm, logFile);
         var bm = new BufferManager(fm, lm, bufferCount);
         var txA = new Transaction(fm, lm, bm);
         var blk1 = new BlockId("testfile", 1);

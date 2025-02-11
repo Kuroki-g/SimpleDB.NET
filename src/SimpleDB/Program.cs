@@ -22,7 +22,7 @@ using var fm = FileManager.GetInstance(
     }
 );
 builder.Services.AddSingleton<ISimpleDbConfig>(dbConfig).AddSingleton<IFileManager>(fm);
-var lm = new LogManager(FileManager.GetInstance(), dbConfig.LogFileName);
+var lm = LogManager.GetInstance(FileManager.GetInstance(), dbConfig.LogFileName);
 var bm = new BufferManager(FileManager.GetInstance(), lm, dbConfig.BufferSize);
 var db = new Database(dbConfig, FileManager.GetInstance(), lm, bm);
 builder.Services.AddSingleton(db).AddSingleton<ILogManager>(lm).AddSingleton<IBufferManager>(bm);

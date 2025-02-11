@@ -37,7 +37,7 @@ public sealed class Database : IDisposable
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        Lm = new LogManager(Fm, dbConfig.LogFileName);
+        Lm = LogManager.GetInstance(Fm, dbConfig.LogFileName);
         Bm = new BufferManager(Fm, Lm, dbConfig.BufferSize);
 
         BlockSize = dbConfig.BlockSize;

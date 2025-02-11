@@ -21,7 +21,7 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
 
-        var exception = Record.Exception(() => new LogManager(fm, fileName));
+        var exception = Record.Exception(() => LogManager.GetInstance(fm, fileName));
 
         Assert.Equal([fileName], fm.OpenedFiles);
         Assert.Null(exception);
@@ -41,7 +41,7 @@ public class LogManagerTest : IntegrationTestBase
                 BlockSize = 400,
             }
         );
-        var _lm = new LogManager(_fm, fileName);
+        var _lm = LogManager.GetInstance(_fm, fileName);
         LoggingTestHelper.CreateSampleLogRecords(_lm, 1, 35);
         _fm.Dispose(); // disposeして参照を破棄する。
 
@@ -54,7 +54,7 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
 
-        var exception = Record.Exception(() => new LogManager(fm, fileName));
+        var exception = Record.Exception(() => LogManager.GetInstance(fm, fileName));
 
         Assert.Null(exception);
     }
@@ -72,7 +72,7 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
 
-        var lm = new LogManager(fm, fileName);
+        var lm = LogManager.GetInstance(fm, fileName);
         var logRecord = LoggingTestHelper.CreateLogRecord("first-record", 1);
         var lsn = lm.Append(logRecord);
 
@@ -91,7 +91,7 @@ public class LogManagerTest : IntegrationTestBase
                 BlockSize = 0x80,
             }
         );
-        var lm = new LogManager(fm, fileName);
+        var lm = LogManager.GetInstance(fm, fileName);
         for (int i = 0; i < 100; i++)
         {
             var logRecord = LoggingTestHelper.CreateLogRecord($"record{i}", i);
@@ -114,7 +114,7 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
 
-        var lm = new LogManager(fm, fileName);
+        var lm = LogManager.GetInstance(fm, fileName);
 
         var actual = LoggingTestHelper.GetLogRecords(lm);
 
@@ -134,7 +134,7 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
 
-        var lm = new LogManager(fm, fileName);
+        var lm = LogManager.GetInstance(fm, fileName);
 
         var actual = LoggingTestHelper.CreateSampleLogRecords(lm, 1, 35);
         var actual2 = LoggingTestHelper.CreateSampleLogRecords(lm, 36, 70);

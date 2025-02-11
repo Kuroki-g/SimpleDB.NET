@@ -20,7 +20,7 @@ public class TransactionTest : IntegrationTestBase
                 BlockSize = 0x90,
             }
         );
-        var lm = new LogManager(fm, "log-file");
+        var lm = LogManager.GetInstance(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);
@@ -44,7 +44,7 @@ public class TransactionTest : IntegrationTestBase
                 BlockSize = 0x90,
             }
         );
-        var lm = new LogManager(fm, "log-file");
+        var lm = LogManager.GetInstance(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);
@@ -75,7 +75,7 @@ public class TransactionTest : IntegrationTestBase
                 BlockSize = 0x90,
             }
         );
-        var lm = new LogManager(fm, "log-file");
+        var lm = LogManager.GetInstance(fm, "log-file");
         var bm = new BufferManager(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);

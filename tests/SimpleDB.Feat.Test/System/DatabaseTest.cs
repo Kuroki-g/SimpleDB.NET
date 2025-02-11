@@ -27,7 +27,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         // Act
@@ -80,7 +80,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         // Act
@@ -108,7 +108,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         // Act
@@ -149,7 +149,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>
@@ -189,7 +189,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>
@@ -233,7 +233,7 @@ public class DatabaseTest : IntegrationTestBase
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        var lm = new LogManager(fm, dbConfig.LogFileName);
+        var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
         var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>

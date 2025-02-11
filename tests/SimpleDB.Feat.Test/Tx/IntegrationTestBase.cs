@@ -71,7 +71,7 @@ public abstract class IntegrationTestBase : IDisposable
                 BlockSize = 0x320,
             }
         );
-        var lm = new LogManager(fm, "simpledb.log");
+        var lm = LogManager.GetInstance(fm, "simpledb.log");
         var bm = new BufferManager(fm, lm, 8);
 
         return new Transaction(fm, lm, bm);
