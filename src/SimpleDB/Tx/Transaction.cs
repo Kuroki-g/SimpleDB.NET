@@ -173,8 +173,14 @@ public class Transaction : ITransaction, IDisposable
             return;
         }
 
+        // NOTE: FileManager, LogManager, BufferManager は外部から注入されたものなので、
+        // ここでDisposeする必要はない。
         if (disposing)
         {
+            if (_bufferBoard is IDisposable disposableBufferBoard)
+            {
+                disposableBufferBoard?.Dispose();
+            }
             if (Rm is IDisposable disposableRm)
             {
                 disposableRm.Dispose();
@@ -182,22 +188,6 @@ public class Transaction : ITransaction, IDisposable
             if (Cm is IDisposable disposableCm)
             {
                 disposableCm?.Dispose();
-            }
-            if (_bufferBoard is IDisposable disposableBufferBoard)
-            {
-                disposableBufferBoard?.Dispose();
-            }
-            if (Lm is IDisposable disposableLm)
-            {
-                disposableLm?.Dispose();
-            }
-            if (Bm is IDisposable disposableBm)
-            {
-                disposableBm?.Dispose();
-            }
-            if (Fm is IDisposable disposableFm)
-            {
-                disposableFm?.Dispose();
             }
         }
 
