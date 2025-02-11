@@ -61,9 +61,21 @@ public class PageTest
     }
 
     [Theory]
+    [InlineData(8, 1, new byte[] { 255 })]
+    [InlineData(8, 1, new byte[] { 255, 0, 0 })]
+    public void SetBytes_GetBytes_範囲外の場合(int blockSize, int offset, byte[] bytes)
+    {
+        var page = new Page(blockSize);
+        page.SetBytes(offset, bytes);
+
+        var actual = Record.Exception(() => page.GetBytes(0));
+
+        Assert.IsType<ArgumentOutOfRangeException>(actual);
+    }
+
+    [Theory]
     [InlineData(8, 0, new byte[] { 255 }, new byte[] { 255 })]
     [InlineData(8, 0, new byte[] { 255, 255 }, new byte[] { 255, 255 })]
-    [InlineData(8, 1, new byte[] { 255 }, new byte[] { 0, 255, 0, 0 })]
     public void SetBytes_GetBytes_バイト列での値のsetとgetが出来る(
         int blockSize,
         int offset,

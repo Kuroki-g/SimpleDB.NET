@@ -39,8 +39,8 @@ public sealed class Page : IDisposable
     public Page(byte[] bytes)
     {
         _stream = new MemoryStream(bytes);
-        _writer = new BinaryWriter(_stream);
-        _reader = new BinaryReader(_stream);
+        _writer = new BinaryWriter(_stream, CHARSET);
+        _reader = new BinaryReader(_stream, CHARSET);
     }
 
     /// <summary>
@@ -50,14 +50,25 @@ public sealed class Page : IDisposable
     /// <returns>The integer value at the specified offset</returns>
     public int GetInt(int offset)
     {
-        var _ = offset >= 0 ? offset : 0;
-        if (_ >= _stream.Length)
+        if (offset < 0)
         {
-            throw new ArgumentOutOfRangeException(offset.ToString());
+            throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+        }
+        if (offset + sizeof(int) > _stream.Length)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(offset),
+                "Offset exceeds the remaining size of the stream."
+            );
         }
 
-        _stream.Seek(_, SeekOrigin.Begin);
-        return _reader.ReadInt32();
+        _stream.Seek(offset, SeekOrigin.Begin);
+        byte[] bytes = _reader.ReadBytes(Bytes.Integer);
+        if (BitConverter.IsLittleEndian) // JavaのByteBufferはビッグエンディアンなので
+        {
+            Array.Reverse(bytes);
+        }
+        return BitConverter.ToInt32(bytes, 0);
     }
 
     /// <summary>
@@ -67,8 +78,18 @@ public sealed class Page : IDisposable
     /// <param name="n">The integer value to write</param>
     public void SetInt(int offset, int n)
     {
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+        }
+
         _stream.Seek(offset, SeekOrigin.Begin);
-        _writer.Write(n);
+        byte[] bytes = BitConverter.GetBytes(n);
+        if (BitConverter.IsLittleEndian) // JavaのByteBufferはビッグエンディアンなので
+        {
+            Array.Reverse(bytes);
+        }
+        _writer.Write(bytes);
     }
 
     /// <summary>
@@ -82,8 +103,22 @@ public sealed class Page : IDisposable
         try
         {
             int length = _reader.ReadInt32();
-            var bytes = _reader.ReadBytes(length);
-            return bytes;
+            // lengthが負の値の場合のチェック
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    length.ToString(),
+                    "Length cannot be negative."
+                );
+            }
+
+            // lengthがストリームの残りのサイズを超える場合のチェック
+            return offset + Bytes.Integer + length > _stream.Length
+                ? throw new ArgumentOutOfRangeException(
+                    length.ToString(),
+                    "Length exceeds the remaining size of the stream."
+                )
+                : _reader.ReadBytes(length);
         }
         catch (EndOfStreamException)
         {
@@ -98,6 +133,11 @@ public sealed class Page : IDisposable
     /// <param name="bytes">The byte array to write</param>
     public void SetBytes(int offset, byte[] bytes)
     {
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+        }
+
         _stream.Position = offset;
         _writer.Write(bytes.Length);
         _writer.Write(bytes);
@@ -111,7 +151,7 @@ public sealed class Page : IDisposable
 
     public void SetString(int offset, string s)
     {
-        byte[] bytes = CHARSET.GetBytes(s);
+        var bytes = CHARSET.GetBytes(s);
         SetBytes(offset, bytes);
     }
 
@@ -122,8 +162,8 @@ public sealed class Page : IDisposable
     /// <returns>The maximum number of bytes required</returns>
     public static int MaxLength(int strlen)
     {
-        var bytesPerChar = CHARSET.GetMaxByteCount(1);
-        return Bytes.Integer + strlen * bytesPerChar;
+        // 長さ情報(int)のための4バイト + 文字列の最大バイト数
+        return Bytes.Integer + strlen * MaxBytesPerChar;
     }
 
     /// <summary>
