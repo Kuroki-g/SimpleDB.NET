@@ -22,7 +22,16 @@ public class FileManagerTest
                 { @"./mock/sample", new MockFileData("sample file") },
             }
         );
-        var manager = new FileManager(@"./mock", 100, fileSystem);
+
+        var manager = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = @"./mock",
+                FileName = @"./mock/sample",
+                BlockSize = 100,
+            },
+            fileSystem
+        );
 
         Assert.Equal(100, manager.BlockSize);
         Assert.False(manager.IsNew);
@@ -32,7 +41,15 @@ public class FileManagerTest
     public void FileManager_Instance_new_directory()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { });
-        var manager = new FileManager(@"./mock", 100, fileSystem);
+        var manager = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = @"./mock",
+                FileName = @"./mock/sample",
+                BlockSize = 100,
+            },
+            fileSystem
+        );
 
         Assert.Equal(100, manager.BlockSize);
         Assert.True(manager.IsNew);
@@ -46,7 +63,14 @@ public class FileManagerTest
     {
         string fileName = "test-file.blk";
         var blockSize = 400;
-        var manager = new FileManager(_dir, blockSize);
+        var manager = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = @"./mock/sample",
+                BlockSize = blockSize,
+            }
+        );
 
         var actual = manager.Append(fileName);
 
@@ -61,7 +85,14 @@ public class FileManagerTest
     {
         string fileName = "test-file.blk";
         var blockSize = 400;
-        var fm = new FileManager(_dir, blockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = @"./mock/sample",
+                BlockSize = blockSize,
+            }
+        );
         Assert.Equal(0, fm.Length(fileName));
 
         var actual0 = fm.Append(fileName);
@@ -85,7 +116,14 @@ public class FileManagerTest
     {
         string fileName = "test-file.blk";
         var blockSize = 400;
-        var fm = new FileManager(_dir, blockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = @"./mock/sample",
+                BlockSize = blockSize,
+            }
+        );
 
         var blockId = new BlockId(fileName, 2);
         var pageToWrite = new Page(fm.BlockSize);
@@ -108,10 +146,19 @@ public class FileManagerTest
     public void Read_no_block_file_throws_exception()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { });
-        var manager = new FileManager(_dir, 100, fileSystem);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig()
+            {
+                DbDirectory = _dir,
+                FileName = @"./mock/sample",
+                BlockSize = 100,
+            },
+            fileSystem
+        );
+
         var blockId = new BlockId("not-exist-block", 1);
 
-        var actual = Record.Exception(() => manager.Read(blockId, new Page([])));
+        var actual = Record.Exception(() => fm.Read(blockId, new Page([])));
 
         Assert.IsType<SystemException>(actual);
     }
