@@ -42,6 +42,7 @@ public abstract class IntegrationTestBase : IDisposable
     {
         GC.SuppressFinalize(this);
         ResetFileManagerSingleton();
+        ResetLogManagerSingleton();
         Helper.Delete(_dir);
     }
 
@@ -51,6 +52,18 @@ public abstract class IntegrationTestBase : IDisposable
     private static void ResetFileManagerSingleton()
     {
         var field = typeof(FileManager).GetField(
+            "s_instance",
+            BindingFlags.NonPublic | BindingFlags.Static
+        );
+        field?.SetValue(null, null);
+    }
+
+    /// <summary>
+    /// <see cref="LogManager.s_instance"/> のシングルトンインスタンスをリセットする。
+    /// </summary>
+    private static void ResetLogManagerSingleton()
+    {
+        var field = typeof(LogManager).GetField(
             "s_instance",
             BindingFlags.NonPublic | BindingFlags.Static
         );

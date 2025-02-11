@@ -1,3 +1,4 @@
+// LogEnumerator.cs
 using System.Collections;
 using Common;
 using SimpleDB.Storage;
@@ -52,20 +53,34 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
 
     public bool MoveNext()
     {
-        // まずJavaのコードのhasNextを行う。falseならそのままreturnする。
-        var hasNext = _currentPos < _fm.BlockSize || _blockId.Number > 0;
-        if (!hasNext)
-            return false;
-        // next相当のコードを呼び出す。
-        if (_currentPos == _fm.BlockSize)
-        {
-            _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1);
-            MoveToBlock(_blockId);
-        }
+        _currentPos = PreviousRecordPosition();
 
-        // TODO: _currentPos += sizeof(int) + Current.Length;の方が良いかもしれない。
-        _currentPos += Bytes.Integer + Current.Length; //変更前
+        if (_currentPos == 0) //最後の位置
+        {
+            if (_blockId.Number == 0)
+            {
+                throw new InvalidOperationException("No next log record."); // 変更: 例外をスロー
+            }
+            else
+            {
+                _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1); //前のブロックへ
+                MoveToBlock(_blockId);
+                if (_currentPos == 0)
+                {
+                    throw new InvalidOperationException("No next log record."); // 変更: 例外をスロー
+                }
+            }
+        }
         return true;
+    }
+
+    private int PreviousRecordPosition()
+    {
+        if (_currentPos == 0)
+            return 0; //ここは残す
+        int currentRecordSize = _page.GetInt(_currentPos); // 現在のレコードのサイズを取得
+        int previousPos = _currentPos - (currentRecordSize + Bytes.Integer); // 前のレコードの位置を計算
+        return previousPos >= 0 ? previousPos : 0; //境界値チェック
     }
 
     public void Reset()
@@ -73,14 +88,9 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
         throw new InvalidOperationException("Cannot revert log block");
     }
 
-    /// <summary>
-    /// Moves to the specified log block and positions it at the first record in that block (i.e., the most recent one).
-    /// </summary>
-    /// <param name="blockId"></param>
     private void MoveToBlock(BlockId blockId)
     {
         _fm.Read(blockId, _page);
-        var boundary = _page.GetInt(0);
-        _currentPos = boundary;
+        _currentPos = _page.GetInt(0); //最後のレコードを指すように
     }
 }

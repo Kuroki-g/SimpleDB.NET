@@ -48,7 +48,7 @@ internal sealed class LogManager : ILogManager
         {
             lock (Lock)
             {
-                s_instance ??= LogManager.GetInstance(fm, logFile);
+                s_instance ??= new LogManager(fm, logFile);
             }
         }
         else //Check if the existing instance uses the same file manager and log file.

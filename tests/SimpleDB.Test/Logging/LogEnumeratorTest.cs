@@ -1,4 +1,5 @@
 using System.IO.Abstractions.TestingHelpers;
+using Common;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
 using TestHelper.Utils;
@@ -12,6 +13,106 @@ public class LogEnumeratorTest
     public LogEnumeratorTest()
     {
         Helper.InitializeDir(_dir);
+    }
+
+    [Fact]
+    public void TestEmptyLog()
+    {
+        var fileName = "test.log";
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = _dir, BlockSize = 400 }
+        );
+        var logManager = LogManager.GetInstance(fm, fileName);
+        using var logEnumerator = logManager.GetEnumerator();
+
+        var result = Record.Exception(() => logEnumerator.MoveNext());
+
+        Assert.IsType<EndOfStreamException>(result);
+    }
+
+    [Fact]
+    public void TestSingleBlock()
+    {
+        var fileName = "test.log";
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = _dir, BlockSize = 400 }
+        );
+        var logManager = LogManager.GetInstance(fm, fileName);
+
+        // ログレコードを追加
+        var logRecord1 = CreateLogRecord("record1");
+        var logRecord2 = CreateLogRecord("record2");
+        var logRecord3 = CreateLogRecord("record3");
+
+        logManager.Append(logRecord1);
+        logManager.Append(logRecord2);
+        logManager.Append(logRecord3);
+
+        // LogEnumeratorを使ってログを逆順に読み込む
+        using var logEnumerator = logManager.GetEnumerator();
+
+        Assert.True(logEnumerator.MoveNext());
+        var current = logEnumerator.Current;
+        Assert.Equal(logRecord3, current); // 内容を比較
+
+        Assert.True(logEnumerator.MoveNext());
+        Assert.Equal(logRecord2, logEnumerator.Current); // 内容を比較
+
+        Assert.True(logEnumerator.MoveNext());
+        Assert.Equal(logRecord1, logEnumerator.Current); // 内容を比較
+        Assert.Throws<InvalidOperationException>(() => logEnumerator.MoveNext());
+    }
+
+    [Fact]
+    public void TestMultipleBlocks()
+    {
+        var dir = "LogEnumeratorTest_MultipleBlocks";
+        var fileName = "test.log";
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = _dir, BlockSize = 200 }
+        );
+        var logManager = LogManager.GetInstance(fm, fileName);
+
+        // 複数のブロックにまたがるようにログレコードを追加
+        var logRecord1 = CreateLogRecord("record1");
+        var logRecord2 = CreateLogRecord("record2");
+        var logRecord3 = CreateLogRecord("record3");
+        var logRecord4 = CreateLogRecord("record4");
+
+        logManager.Append(logRecord1);
+        logManager.Append(logRecord2);
+        logManager.Append(logRecord3);
+        logManager.Append(logRecord4);
+
+        // LogEnumeratorを使ってログを逆順に読み込む
+        using var logEnumerator = logManager.GetEnumerator();
+
+        Assert.True(logEnumerator.MoveNext());
+        var current = logEnumerator.Current;
+        Assert.Equal(logRecord4, current); // 内容を比較
+
+        Assert.True(logEnumerator.MoveNext());
+        Assert.Equal(logRecord3, logEnumerator.Current); // 内容を比較
+
+        Assert.True(logEnumerator.MoveNext());
+        Assert.Equal(logRecord2, logEnumerator.Current); // 内容を比較
+        Assert.True(logEnumerator.MoveNext());
+
+        Assert.Equal(logRecord1, logEnumerator.Current); // 内容を比較
+
+        // Assert.False(logEnumerator.MoveNext()); // もうレコードがないことを確認
+        Assert.Throws<InvalidOperationException>(() => logEnumerator.MoveNext());
+    }
+
+    private static byte[] CreateLogRecord(string s)
+    {
+        int spos = 0;
+        int npos = Bytes.Integer + Page.CHARSET.GetBytes(s).Length; // 文字列の長さ(int) + 文字列自体のバイト数
+        var b = new byte[npos + Bytes.Integer];
+        using var p = new Page(b);
+        p.SetString(spos, s);
+        //p.SetInt(npos, 0); //dummy
+        return b;
     }
 
     [Fact]
