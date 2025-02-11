@@ -25,7 +25,31 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
         MoveToBlock(_blockId);
     }
 
-    public byte[] Current => _page.GetBytes(_currentPos);
+    public byte[] Current
+    {
+        get
+        {
+            var bytes = _page.GetBytes(_currentPos);
+            if (bytes.Length == 0)
+            {
+                if (_emptyCount > _EMPTY_LOOP_THRESHOLD)
+                {
+                    throw new InvalidOperationException("Too many empty records");
+                }
+                _emptyCount++;
+            }
+            else
+            {
+                _emptyCount = 0;
+            }
+
+            return bytes;
+        }
+    }
+
+    private readonly int _EMPTY_LOOP_THRESHOLD = 64;
+
+    private int _emptyCount = 0;
 
     object IEnumerator.Current => Current;
 
@@ -63,8 +87,7 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
             MoveToBlock(_blockId);
         }
 
-        // TODO: _currentPos += sizeof(int) + Current.Length;の方が良いかもしれない。
-        _currentPos += Bytes.Integer + Current.Length; //変更前
+        _currentPos += Bytes.Integer + Current.Length;
         return true;
     }
 
