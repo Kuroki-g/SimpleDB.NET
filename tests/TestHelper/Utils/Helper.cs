@@ -82,6 +82,6 @@ public static class Helper
 
         var dir = new DirectoryInfo(dbDirectory);
         if (dir.Exists)
-            dir.Delete();
+            dir.Delete(true); // Pass 'true' to delete the directory and its contents
     }
 }
