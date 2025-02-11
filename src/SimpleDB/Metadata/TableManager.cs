@@ -92,6 +92,12 @@ internal class TableManager : ITableManager
             }
         }
         tCat.Close();
+        if (CatalogSchema.FIELD_TABLE_NAME == tableName && size == -1)
+        {
+            throw new ArgumentException(
+                $"database is broken. table catalog {CatalogSchema.FIELD_TABLE_NAME} was not found from database."
+            );
+        }
 
         var schema = new Schema();
         var offsets = new Dictionary<string, int>(); // TODO: ただ保持するだけでDictionaryはコストが高い
