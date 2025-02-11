@@ -7,19 +7,21 @@ public sealed class Page : IDisposable
 {
     private readonly MemoryStream _stream;
 
+    internal byte[] RawData => _stream.ToArray();
+
     private readonly BinaryWriter _writer;
 
     private readonly BinaryReader _reader;
 
     internal bool IsDisposed = false;
 
-    private static readonly Encoding CHARSET = Encoding.UTF8;
+    public static readonly Encoding CHARSET = Encoding.UTF8;
 
     /// <summary>
     /// 1文字あたり必要な最大のバイト数
     /// WARNING: C#の実装ではGetMaxByteCountは文字数に比例しない。なので概算になる。
     /// </summary>
-    private static readonly int MaxBytesPerChar = CHARSET.GetMaxByteCount(1);
+    public static readonly int MaxBytesPerChar = CHARSET.GetMaxByteCount(1);
 
     /// <summary>
     /// A constructor for creating data buffers
