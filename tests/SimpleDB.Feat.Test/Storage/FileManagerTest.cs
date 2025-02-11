@@ -1,57 +1,58 @@
-using System.IO.Abstractions.TestingHelpers;
+using System.IO.Abstractions;
+using SimpleDB.Feat.Test.Tx;
 using SimpleDB.Storage;
 using TestHelper.Utils;
 
-namespace SimpleDB.Test.Storage;
+namespace SimpleDB.Feat.Test.Storage;
 
-public class FileManagerTest
+public class FileManagerTest : IntegrationTestBase
 {
-    private const string _dir = "./mock";
+    private const string Dir = "./mock";
 
     public FileManagerTest()
     {
-        Helper.InitializeDir(_dir);
+        Helper.InitializeDir(Dir);
     }
 
     [Fact]
     public void FileManager_Instance_already_exist()
     {
-        var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData>
-            {
-                { @"./mock/sample", new MockFileData("sample file") },
-            }
-        );
+        var fileSystem = new FileSystem();
+        var blockSize = 100;
 
         var manager = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = @"./mock",
-                FileName = @"./mock/sample",
-                BlockSize = 100,
+                DbDirectory = Dir,
+                FileName = $@"{Dir}/sample",
+                BlockSize = blockSize,
             },
             fileSystem
         );
 
-        Assert.Equal(100, manager.BlockSize);
+        Assert.Equal(blockSize, manager.BlockSize);
         Assert.False(manager.IsNew);
     }
 
     [Fact]
     public void FileManager_Instance_new_directory()
     {
-        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { });
+        var fileSystem = new FileSystem();
+        var blockSize = 100;
+        // add new directory
+        var dirRoot = $"{_dir}/{RandomString(12)}";
+        fileSystem.Directory.CreateDirectory(dirRoot);
         var manager = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = @"./mock",
-                FileName = @"./mock/sample",
-                BlockSize = 100,
+                DbDirectory = $"{dirRoot}/newDir",
+                FileName = $@"sample.db",
+                BlockSize = blockSize,
             },
             fileSystem
         );
 
-        Assert.Equal(100, manager.BlockSize);
+        Assert.Equal(blockSize, manager.BlockSize);
         Assert.True(manager.IsNew);
     }
 
@@ -66,7 +67,7 @@ public class FileManagerTest
         var manager = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = _dir,
+                DbDirectory = Dir,
                 FileName = @"./mock/sample",
                 BlockSize = blockSize,
             }
@@ -88,7 +89,7 @@ public class FileManagerTest
         var fm = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = _dir,
+                DbDirectory = Dir,
                 FileName = @"./mock/sample",
                 BlockSize = blockSize,
             }
@@ -119,7 +120,7 @@ public class FileManagerTest
         var fm = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = _dir,
+                DbDirectory = Dir,
                 FileName = @"./mock/sample",
                 BlockSize = blockSize,
             }
@@ -145,13 +146,14 @@ public class FileManagerTest
     [Fact]
     public void Read_no_block_file_throws_exception()
     {
-        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { });
+        var fileSystem = new FileSystem();
+        var blockSize = 100;
         var fm = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = _dir,
+                DbDirectory = Dir,
                 FileName = @"./mock/sample",
-                BlockSize = 100,
+                BlockSize = blockSize,
             },
             fileSystem
         );
