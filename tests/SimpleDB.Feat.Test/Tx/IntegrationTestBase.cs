@@ -1,3 +1,4 @@
+using System.Reflection;
 using SimpleDB.DataBuffer;
 using SimpleDB.Logging;
 using SimpleDB.Metadata;
@@ -24,6 +25,8 @@ public abstract class IntegrationTestBase : IDisposable
 
     protected readonly DirectoryInfo _directoryInfo;
 
+    protected static string RandomString(int length) => Helper.RandomString(length);
+
     public IntegrationTestBase()
     {
         var randomStr = Helper.RandomString(12);
@@ -38,7 +41,20 @@ public abstract class IntegrationTestBase : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+        ResetFileManagerSingleton();
         Helper.Delete(_dir);
+    }
+
+    /// <summary>
+    /// <see cref="FileManager.s_instance"/> のシングルトンインスタンスをリセットする。
+    /// </summary>
+    private static void ResetFileManagerSingleton()
+    {
+        var field = typeof(FileManager).GetField(
+            "s_instance",
+            BindingFlags.NonPublic | BindingFlags.Static
+        );
+        field?.SetValue(null, null);
     }
 
     /// <summary>
