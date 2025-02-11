@@ -13,7 +13,7 @@ public class Buffer : IDisposable
 
     private int _pins = 0;
 
-    private bool _disposed = false; // Dispose済みフラグ
+    internal bool IsDisposed = false; // Dispose済みフラグ
 
     public Page Contents { get; init; }
 
@@ -81,7 +81,7 @@ public class Buffer : IDisposable
     // Protected Disposeメソッド (パターン)
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (!IsDisposed)
         {
             if (disposing)
             {
@@ -98,7 +98,7 @@ public class Buffer : IDisposable
                 }
             }
 
-            _disposed = true;
+            IsDisposed = true;
         }
     }
 
