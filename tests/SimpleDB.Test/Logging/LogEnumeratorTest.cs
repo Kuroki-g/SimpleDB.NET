@@ -1,5 +1,4 @@
-using Common;
-using FakeItEasy;
+using System.IO.Abstractions.TestingHelpers;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
 using TestHelper.Utils;
@@ -18,7 +17,9 @@ public class LogEnumeratorTest
     [Fact]
     public void Current_no_file()
     {
-        var fm = new FileManager(_dir, 400);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = "./mock", BlockSize = 0x80 }
+        );
 
         var blockId = new BlockId("log-file", 1);
         var enumerator = new LogEnumerator(fm, blockId);
@@ -34,7 +35,16 @@ public class LogEnumeratorTest
         var blockSize = 0x80;
         CreateLogRecord(_dir, blockId, blockSize);
 
-        var fm = new FileManager(_dir, blockSize);
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                { @"./mock/sample", new MockFileData("sample file") },
+            }
+        );
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = "./mock", BlockSize = blockSize },
+            fileSystem
+        );
         var enumerator = new LogEnumerator(fm, blockId);
 
         var c0 = enumerator.Current;
@@ -50,8 +60,9 @@ public class LogEnumeratorTest
         var blockId = new BlockId(fileName, 1);
         var blockSize = 0x80;
         CreateLogRecord(_dir, blockId, blockSize);
-
-        var fm = new FileManager(_dir, 0x80);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = "./mock", BlockSize = blockSize }
+        );
         var enumerator = new LogEnumerator(fm, blockId);
 
         while (enumerator.MoveNext())
@@ -77,7 +88,9 @@ public class LogEnumeratorTest
     private static void CreateLogRecord(string dir, BlockId blockId, int blockSize)
     {
         Helper.InitializeDir(dir);
-        var fm = new FileManager(_dir, blockSize);
+        var fm = FileManager.GetInstance(
+            new FileManagerConfig { DbDirectory = "./mock", BlockSize = blockSize }
+        );
         var record = LoggingTestHelper.CreateLogRecord("record1", 1);
         var pageToWrite = new Page(record);
 
