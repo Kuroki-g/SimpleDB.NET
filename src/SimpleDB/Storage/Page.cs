@@ -13,9 +13,13 @@ public sealed class Page : IDisposable
 
     internal bool IsDisposed = false;
 
-#pragma warning disable CA2211 // Non-constant fields should not be visible
-    public static Encoding CHARSET = Encoding.UTF8; // UTF-32のほうがいいかもしれない。
-#pragma warning restore CA2211 // Non-constant fields should not be visible
+    private static readonly Encoding CHARSET = Encoding.UTF8;
+
+    /// <summary>
+    /// 1文字あたり必要な最大のバイト数
+    /// WARNING: C#の実装ではGetMaxByteCountは文字数に比例しない。なので概算になる。
+    /// </summary>
+    private static readonly int MaxBytesPerChar = CHARSET.GetMaxByteCount(1);
 
     /// <summary>
     /// A constructor for creating data buffers
@@ -40,10 +44,10 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// WARNING: あまりよく分かっていない。移植が間違っているはず。
+    /// Get an integer from the page at the specified offset.
     /// </summary>
-    /// <param name="offset"></param>
-    /// <returns></returns>
+    /// <param name="offset">The byte offset within the page</param>
+    /// <returns>The integer value at the specified offset</returns>
     public int GetInt(int offset)
     {
         var _ = offset >= 0 ? offset : 0;
@@ -57,10 +61,10 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// WARNING: あまりよく分かっていない。移植が間違っているはず。
+    /// Write an integer to the page at the specified offset.
     /// </summary>
-    /// <param name="offset"></param>
-    /// <param name="n"></param>
+    /// <param name="offset">The byte offset within the page</param>
+    /// <param name="n">The integer value to write</param>
     public void SetInt(int offset, int n)
     {
         _stream.Seek(offset, SeekOrigin.Begin);
@@ -68,10 +72,10 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// TODO: Bufferの開始位置があっているか確認する。
+    /// Get a byte array from the page at the specified offset.
     /// </summary>
-    /// <param name="offset"></param>
-    /// <returns></returns>
+    /// <param name="offset">The byte offset within the page</param>
+    /// <returns>The byte array at the specified offset</returns>
     public byte[] GetBytes(int offset)
     {
         _stream.Seek(offset, SeekOrigin.Begin);
@@ -88,11 +92,10 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// WARNING: 元々の実装がバッファオーバーフローしてしまうはずなので、現在の実装だと想定通りにならないはずである。
-    /// ページのサイズより大きいデータが割り当てられた時の例外処理がなされていない。
+    /// Write a byte array to the page at the specified offset.
     /// </summary>
-    /// <param name="offset"></param>
-    /// <param name="bytes"></param>
+    /// <param name="offset">The byte offset within the page</param>
+    /// <param name="bytes">The byte array to write</param>
     public void SetBytes(int offset, byte[] bytes)
     {
         _stream.Position = offset;
@@ -113,11 +116,10 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// WARNING: C#の実装ではGetMaxByteCountは文字数に比例しない。なので概算になる。
-    /// <see href="https://learn.microsoft.com/ja-jp/dotnet/api/system.text.encoding.getmaxbytecount?view=net-8.0"/>
+    /// Calculate the maximum number of bytes required to store a string of the specified length.
     /// </summary>
-    /// <param name="strlen"></param>
-    /// <returns></returns>
+    /// <param name="strlen">The length of the string</param>
+    /// <returns>The maximum number of bytes required</returns>
     public static int MaxLength(int strlen)
     {
         var bytesPerChar = CHARSET.GetMaxByteCount(1);
@@ -125,10 +127,9 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// 元々の実装はByteBufferをcontents()で取得出来ていた。
-    /// そのまま参照を渡すのは問題があるので書き込むようにしている。
+    ///  Write the contents of a byte array to the page.
     /// </summary>
-    /// <param name="buffer">RandomAccess.Readで取得した配列</param>
+    /// <param name="buffer"></param>
     internal void SetContents(Span<byte> buffer)
     {
         _stream.Seek(0, SeekOrigin.Begin);
@@ -136,15 +137,13 @@ public sealed class Page : IDisposable
     }
 
     /// <summary>
-    /// bufferの中身を取得する。
+    /// Get the contents of the page as a byte array.
     /// </summary>
-    /// <see href="https://learn.microsoft.com/ja-jp/dotnet/api/system.io.memorystream.-ctor?view=net-9.0"/>
-    /// <returns></returns>
+    /// <returns>A byte array containing the contents of the page</returns>
     internal byte[] Contents()
     {
         _stream.Seek(0, SeekOrigin.Begin);
-        var contents = _stream.ToArray();
-        return contents;
+        return _stream.ToArray();
     }
 
     public void Dispose()
@@ -160,12 +159,10 @@ public sealed class Page : IDisposable
             if (disposing)
             {
                 // マネージドリソースの解放
-                _writer.Dispose(); // BinaryWriterをDispose
-                _reader.Dispose(); // BinaryReaderをDispose
-                _stream.Dispose(); // MemoryStreamをDispose (Close()ではなくDispose()を推奨)
+                _writer.Dispose();
+                _reader.Dispose();
+                _stream.Dispose();
             }
-
-            // アンマネージドリソースがあれば解放 (Pageクラスにはない)
 
             IsDisposed = true;
         }
