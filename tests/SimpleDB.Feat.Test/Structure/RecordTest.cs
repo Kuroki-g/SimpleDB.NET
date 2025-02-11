@@ -6,7 +6,7 @@ namespace SimpleDB.Feat.Test.Structure;
 public class RecordTest : IntegrationTestBase
 {
     [Fact]
-    public void RecordTest1()
+    public void Transaction_DBへのインサートが実行できる()
     {
         using var tx = CreateTransaction();
 
@@ -14,17 +14,22 @@ public class RecordTest : IntegrationTestBase
         sch.AddIntField("A");
         sch.AddStringField("B", 9);
         var layout = new Layout(sch);
-        foreach (var fldname in layout.Schema.Fields)
+        var actualOffsets = new Dictionary<string, int>();
+        foreach (var fieldName in layout.Schema.Fields)
         {
-            var offset = layout.Offset(fldname);
-            Console.WriteLine(fldname + " has offset " + offset);
+            var offset = layout.Offset(fieldName);
+            actualOffsets[fieldName] = offset;
         }
-        var blk = tx.Append("testfile");
+        Assert.Equal(4, actualOffsets["A"]);
+        Assert.Equal(8, actualOffsets["B"]);
+
+        // 新しいファイルにブロックを作成し、レコードを挿入する
+        var blk = tx.Append("testfile2");
         tx.Pin(blk);
         var rp = new RecordPage(tx, blk, layout);
         rp.Format();
 
-        Console.WriteLine("Filling the page with random records.");
+        // Filling the page with random records.
         int slot = rp.InsertAfter(-1);
         while (slot >= 0)
         {

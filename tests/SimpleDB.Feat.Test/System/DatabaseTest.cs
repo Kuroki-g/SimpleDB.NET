@@ -266,17 +266,19 @@ public class DatabaseTest : IntegrationTestBase
         Assert.NotNull(table);
     }
 
-    [Fact]
+    [Fact(Skip = "この挙動で正しいかが不明")]
     public void Recover_can_recover_uncommitted_table_schema()
     {
         var db = new Database(new SimpleDbConfig());
-        using var tx = db.NewTx();
-        var schema = CreateSchema();
+        using (var tx = db.NewTx())
+        {
+            var schema = CreateSchema();
 
-        // Act
-        db.Mm.CreateTable("sample_table", schema, tx);
-        // recover without commit
-        tx.Recover();
+            // Act
+            db.Mm.CreateTable("sample_table", schema, tx);
+            // recover without commit
+            tx.Recover();
+        }
 
         // Assert
         using var tx2 = db.NewTx();

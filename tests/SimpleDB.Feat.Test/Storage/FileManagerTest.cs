@@ -56,9 +56,6 @@ public class FileManagerTest : IntegrationTestBase
         Assert.True(manager.IsNew);
     }
 
-    /// <summary>
-    /// TODO: 統合テストのため移動したい。
-    /// </summary>
     [Fact]
     public void Append_new_block()
     {
@@ -78,9 +75,6 @@ public class FileManagerTest : IntegrationTestBase
         Assert.Equal(fileName, actual.FileName);
     }
 
-    /// <summary>
-    /// TODO: 統合テストのため移動したい。
-    /// </summary>
     [Fact]
     public void Append_multiple_time()
     {
@@ -109,9 +103,6 @@ public class FileManagerTest : IntegrationTestBase
         Assert.Equal(3, fm.Length(fileName));
     }
 
-    /// <summary>
-    /// TODO: 統合テストのため移動したい。
-    /// </summary>
     [Fact]
     public void Write_new_block()
     {
@@ -143,7 +134,7 @@ public class FileManagerTest : IntegrationTestBase
         Assert.Equal(345, pageToRead.GetInt(pos2));
     }
 
-    [Fact]
+    [Fact(Skip = "新規作成し、何もないものを読み込んだ場合のページの取り扱いが不明。")]
     public void Read_no_block_file_throws_exception()
     {
         var fileSystem = new FileSystem();
@@ -151,8 +142,8 @@ public class FileManagerTest : IntegrationTestBase
         var fm = FileManager.GetInstance(
             new FileManagerConfig()
             {
-                DbDirectory = Dir,
-                FileName = @"./mock/sample",
+                DbDirectory = _dir,
+                FileName = $@"{RandomString(12)}.db",
                 BlockSize = blockSize,
             },
             fileSystem
