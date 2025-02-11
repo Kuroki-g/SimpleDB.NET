@@ -1,13 +1,15 @@
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
+using Common.Abstractions;
 using Microsoft.Win32.SafeHandles;
 
 namespace SimpleDB.Storage;
 
 internal sealed class FileManager : IFileManager, IDisposable
 {
-    private static FileManager? _instance;
-    private static readonly object _lock = new();
+    private static FileManager? s_instance;
+
+    private static readonly object Lock = new();
 
     readonly IFileSystem _fileSystem;
 
@@ -21,12 +23,20 @@ internal sealed class FileManager : IFileManager, IDisposable
 
     public bool IsNew { get; private set; }
 
+    private readonly IRandomAccess _randomAccess;
+
     // Private constructor to prevent external instantiation
-    private FileManager(string dbDirectory, int blockSize, IFileSystem? fileSystem = null)
+    private FileManager(
+        string dbDirectory,
+        int blockSize,
+        IFileSystem? fileSystem = null,
+        IRandomAccess? randomAccess = null
+    )
     {
         if (blockSize <= 0)
             throw new InvalidOperationException("block size must be larger than zero");
         _fileSystem = fileSystem ?? new FileSystem();
+        _randomAccess = randomAccess ?? new RandomAccessWrapper();
         _dbDirectory = _fileSystem.DirectoryInfo.New(dbDirectory);
 
         BlockSize = blockSize;
@@ -51,20 +61,29 @@ internal sealed class FileManager : IFileManager, IDisposable
     // Public static method to get the instance
     public static FileManager GetInstance(
         FileManagerConfig? config = null,
-        IFileSystem? fileSystem = null
+        IFileSystem? fileSystem = null,
+        IRandomAccess? randomAccess = null
     )
     {
-        // Double-checked locking for thread safety
-        if (_instance == null)
+        // DIを使用しない場合は、二重チェックロック
+        if (s_instance == null)
         {
             ArgumentNullException.ThrowIfNull(config);
-            lock (_lock)
+            lock (Lock)
             {
-                _instance ??= new FileManager(config.DbDirectory, config.BlockSize, fileSystem);
+                if (s_instance == null)
+                {
+                    s_instance ??= new FileManager(
+                        config.DbDirectory,
+                        config.BlockSize,
+                        fileSystem,
+                        randomAccess
+                    );
+                }
             }
         }
         // すでに存在している場合はディレクトリとブロックサイズの変更は無視する。
-        return _instance;
+        return s_instance;
     }
 
     /// <summary>
@@ -100,12 +119,12 @@ internal sealed class FileManager : IFileManager, IDisposable
             var handle = GetFileHandle(blockId.FileName);
             var bytes = new byte[BlockSize];
             var buffer = new Span<byte>(bytes);
-            RandomAccess.Read(handle, buffer, blockId.Number * BlockSize);
+            _randomAccess.Read(handle, buffer, blockId.Number * BlockSize);
             page.SetContents(buffer);
         }
         catch (IOException e)
         {
-            throw new SystemException(e.Message);
+            throw new SystemException(e.Message, e);
         }
     }
 
@@ -115,18 +134,18 @@ internal sealed class FileManager : IFileManager, IDisposable
         try
         {
             var handle = GetFileHandle(blockId.FileName);
-            RandomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
+            _randomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
         }
         catch (IOException e)
         {
-            throw new SystemException(e.Message);
+            throw new SystemException(e.Message, e);
         }
     }
 
     public int Length(string fileName)
     {
         var handle = GetFileHandle(fileName) ?? throw new IOException($"cannot access {fileName}");
-        return (int)(RandomAccess.GetLength(handle) / BlockSize);
+        return (int)(_randomAccess.GetLength(handle) / BlockSize);
     }
 
     /// <summary>
