@@ -51,7 +51,7 @@ public sealed class Database : IDisposable
         Lm = lm;
         Bm = bm;
 
-        var tx = NewTx();
+        using var tx = NewTx();
         var isNew = Fm.IsNew;
         if (isNew)
         {
@@ -62,6 +62,7 @@ public sealed class Database : IDisposable
             Console.WriteLine("recovering existing database");
             tx.Recover();
         }
+        Console.WriteLine("recovery complete");
 
         BlockSize = dbConfig.BlockSize;
         // TODO: planner switch
@@ -69,7 +70,6 @@ public sealed class Database : IDisposable
         Planner = CreatePlanner(Mm);
         tx.Commit();
         tx.Dispose();
-        Console.WriteLine("recovery complete");
     }
 
     private static Planner CreatePlanner(IMetadataManager mm)
