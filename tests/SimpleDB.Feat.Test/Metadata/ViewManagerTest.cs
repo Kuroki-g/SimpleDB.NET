@@ -1,6 +1,5 @@
 using SimpleDB.Feat.Test.Tx;
 using SimpleDB.Metadata;
-using SimpleDB.Structure;
 
 namespace SimpleDB.Feat.Test.Metadata;
 
