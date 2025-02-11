@@ -14,7 +14,7 @@ public class TableManagerTest : IntegrationTestBase
             TableScan.RealFileName(TableManager.CATALOG_NAME_FIELD),
             TableScan.RealFileName(TableManager.CATALOG_NAME_TABLE),
         ];
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
         var beforeInitialize = _directoryInfo
             .GetFiles()
             .Select((info) => info.Name)
@@ -36,7 +36,7 @@ public class TableManagerTest : IntegrationTestBase
     public void Constructor_old_database_not_create_catalog_database()
     {
         List<string> expected = [];
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
         var beforeInitialize = _directoryInfo.GetFiles().Select((info) => info.Name).ToList();
 
         var tm = new TableManager(false, tx);
@@ -53,7 +53,7 @@ public class TableManagerTest : IntegrationTestBase
     public void CreateTable_new_table()
     {
         var schema = CreateSchema();
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
         var tm = new TableManager(true, tx);
 
         tm.CreateTable("MyTable", schema, tx);
@@ -70,7 +70,7 @@ public class TableManagerTest : IntegrationTestBase
     [Fact]
     public void GetLayout_new_database_create_catalog_table()
     {
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
         var tm = new TableManager(true, tx);
         tx.Commit();
 
@@ -116,12 +116,12 @@ public class TableManagerTest : IntegrationTestBase
     [Fact]
     public void GetLayout_not_exist_table()
     {
-        var tx = CreateTransaction();
+        using var tx = CreateTransaction();
         var beforeInitialize = _directoryInfo.GetFiles().Select((info) => info.Name).ToList();
 
         var tm = new TableManager(true, tx);
         var layout = tm.GetLayout("NotExistTable", tx);
 
-        Assert.Empty((global::System.Collections.IEnumerable)layout.Schema.Fields);
+        Assert.Empty(layout.Schema.Fields);
     }
 }
