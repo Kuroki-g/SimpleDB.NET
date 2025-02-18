@@ -4,19 +4,21 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.Logging;
 
-internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
+internal class LogIterator : IEnumerable<byte[]>, IDisposable
 {
     private readonly IFileManager _fm;
 
     private BlockId _blockId;
 
-    private readonly Page _page;
+    private Page _page;
 
     private int _currentPos;
 
+    private int _boundary;
+
     private bool _disposed = false;
 
-    public LogEnumerator(IFileManager fm, BlockId blockId)
+    public LogIterator(IFileManager fm, BlockId blockId)
     {
         _fm = fm;
         _blockId = blockId;
@@ -25,41 +27,45 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
         MoveToBlock(_blockId);
     }
 
-    public byte[] Current
+    public IEnumerator<byte[]> GetEnumerator()
     {
-        get
+        while (HasNext())
         {
-            var bytes = _page.GetBytes(_currentPos);
-            if (bytes.Length == 0)
+            if (_currentPos == _fm.BlockSize)
             {
-                if (_emptyCount > _EMPTY_LOOP_THRESHOLD)
-                {
-                    throw new InvalidOperationException("Too many empty records");
-                }
-                _emptyCount++;
-            }
-            else
-            {
-                _emptyCount = 0;
+                _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1);
+                MoveToBlock(_blockId);
             }
 
-            return bytes;
+            byte[] rec = _page.GetBytes(_currentPos);
+            _currentPos += sizeof(int) + rec.Length;
+            yield return rec;
+
+            if (_disposed) // disposedされた後にyield returnしないようにする
+            {
+                yield break;
+            }
         }
     }
 
-    private readonly int _EMPTY_LOOP_THRESHOLD = 64;
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-    private int _emptyCount = 0;
+    private bool HasNext()
+    {
+        return _currentPos < _fm.BlockSize || _blockId.Number > 0;
+    }
 
-    object IEnumerator.Current => Current;
-
+    // IDisposableの実装
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    protected void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
         {
@@ -68,42 +74,24 @@ internal class LogEnumerator : IEnumerator<byte[]>, IDisposable
 
         if (disposing)
         {
-            _page.Dispose();
+            _page?.Dispose();
         }
 
         _disposed = true;
     }
 
-    public bool MoveNext()
+    ~LogIterator() // デストラクタ（ファイナライザ）
     {
-        // まずJavaのコードのhasNextを行う。falseならそのままreturnする。
-        var hasNext = _currentPos < _fm.BlockSize || _blockId.Number > 0;
-        if (!hasNext)
-            return false;
-        // next相当のコードを呼び出す。
-        if (_currentPos == _fm.BlockSize)
-        {
-            _blockId = new BlockId(_blockId.FileName, _blockId.Number - 1);
-            MoveToBlock(_blockId);
-        }
-
-        _currentPos += Bytes.Integer + Current.Length;
-        return true;
+        Dispose(false);
     }
 
-    public void Reset()
+    private void MoveToBlock(BlockId blk)
     {
-        throw new InvalidOperationException("Cannot revert log block");
-    }
-
-    /// <summary>
-    /// Moves to the specified log block and positions it at the first record in that block (i.e., the most recent one).
-    /// </summary>
-    /// <param name="blockId"></param>
-    private void MoveToBlock(BlockId blockId)
-    {
-        _fm.Read(blockId, _page);
-        var boundary = _page.GetInt(0);
-        _currentPos = boundary;
+        // 既にPageオブジェクトが存在する場合は破棄する
+        _page?.Dispose();
+        _page = new Page(new byte[_fm.BlockSize]); // 新しいPageオブジェクトを作成
+        _fm.Read(blk, _page);
+        _boundary = _page.GetInt(0);
+        _currentPos = _boundary;
     }
 }

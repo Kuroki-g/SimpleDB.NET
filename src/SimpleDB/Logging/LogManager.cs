@@ -157,7 +157,7 @@ internal sealed class LogManager : ILogManager
         ThrowIfDisposed();
 
         Flush();
-        return new LogEnumerator(_fm, CurrentBlock);
+        return new LogIterator(_fm, CurrentBlock).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
