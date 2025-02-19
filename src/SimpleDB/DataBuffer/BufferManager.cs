@@ -13,7 +13,11 @@ internal sealed class BufferManager : IBufferManager
 
     private static readonly int _MAX_TIME = 1000; // 1 seconds
 
-    public BufferManager(IFileManager fileManager, ILogManager logManager, int bufferCount)
+    // Singleton instance
+    private static BufferManager? _instance;
+    private static readonly object _lock = new(); // Lock for thread safety
+
+    private BufferManager(IFileManager fileManager, ILogManager logManager, int bufferCount)
     {
         _bufferPool = [];
         _availableBufferCount = bufferCount;
@@ -21,6 +25,22 @@ internal sealed class BufferManager : IBufferManager
         {
             _bufferPool.Add(new Buffer(fileManager, logManager));
         }
+    }
+
+    public static BufferManager GetInstance(
+        IFileManager fileManager,
+        ILogManager logManager,
+        int bufferCount
+    )
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                _instance ??= new BufferManager(fileManager, logManager, bufferCount);
+            }
+        }
+        return _instance;
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)]
@@ -101,4 +121,13 @@ internal sealed class BufferManager : IBufferManager
 
     [MethodImpl(MethodImplOptions.Synchronized)]
     public int Available() => _availableBufferCount;
+
+    // Static method to reset the instance (useful for testing)
+    public static void ResetInstance()
+    {
+        lock (_lock)
+        {
+            _instance = null;
+        }
+    }
 }
