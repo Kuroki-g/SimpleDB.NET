@@ -13,7 +13,7 @@ public class BufferBoardTest : IntegrationTestBase
     {
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
-        var bm = new BufferManager(fm, lm, 3);
+        var bm = BufferManager.GetInstance(fm, lm, 3);
         var board = new BufferBoard(bm);
 
         var blockId = new BlockId("block-file", 1);
@@ -27,7 +27,7 @@ public class BufferBoardTest : IntegrationTestBase
     {
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
-        var bm = new BufferManager(fm, lm, 3);
+        var bm = BufferManager.GetInstance(fm, lm, 3);
         var board = new BufferBoard(bm);
 
         var blockId = new BlockId("block-file", 1);
@@ -42,7 +42,7 @@ public class BufferBoardTest : IntegrationTestBase
     {
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
-        var bm = new BufferManager(fm, lm, 3);
+        var bm = BufferManager.GetInstance(fm, lm, 3);
         var board = new BufferBoard(bm);
 
         var blockId = new BlockId("block-file", 1);

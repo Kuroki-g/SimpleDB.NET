@@ -28,7 +28,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         // Act
         var db = new Database(dbConfig, fm, lm, bm);
@@ -81,7 +81,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         // Act
         var db = new Database(dbConfig, fm, lm, bm);
@@ -109,7 +109,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         // Act
         var db = new Database(dbConfig, fm, lm, bm);
@@ -150,7 +150,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>
         {
@@ -190,7 +190,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>
         {
@@ -234,7 +234,7 @@ public class DatabaseTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, dbConfig.LogFileName);
-        var bm = new BufferManager(fm, lm, dbConfig.BufferSize);
+        var bm = BufferManager.GetInstance(fm, lm, dbConfig.BufferSize);
 
         var fn = new Action(() =>
         {

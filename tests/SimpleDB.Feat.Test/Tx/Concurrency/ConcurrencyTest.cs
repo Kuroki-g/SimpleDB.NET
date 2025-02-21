@@ -24,7 +24,7 @@ public class ConcurrencyTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, logFile);
-        var bm = new BufferManager(fm, lm, bufferCount);
+        var bm = BufferManager.GetInstance(fm, lm, bufferCount);
         var txA = new Transaction(fm, lm, bm);
         var blk1 = new BlockId("testfile", 1);
         var blk2 = new BlockId("testfile", 2);

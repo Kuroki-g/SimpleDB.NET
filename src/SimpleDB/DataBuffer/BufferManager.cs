@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
 
@@ -11,11 +11,10 @@ internal sealed class BufferManager : IBufferManager
 
     private int _availableBufferCount;
 
-    private static readonly int _MAX_TIME = 1000; // 1 seconds
+    private static readonly int MAX_TIME = 1000; // 1 seconds
 
-    // Singleton instance
-    private static BufferManager? s_instance;
-    private static readonly object Lock = new(); // Lock for thread safety
+    // Singleton instance using Lazy<T>
+    private static Lazy<BufferManager>? s_lazyInstance;
 
     private BufferManager(IFileManager fileManager, ILogManager logManager, int bufferCount)
     {
@@ -27,73 +26,92 @@ internal sealed class BufferManager : IBufferManager
         }
     }
 
+    private static readonly object InitLock = new(); // 初期化時のロック用
+
     public static BufferManager GetInstance(
         IFileManager fileManager,
         ILogManager logManager,
         int bufferCount
     )
     {
-        if (s_instance == null)
+        lock (InitLock) // 排他制御
         {
-            lock (Lock)
+            if (s_lazyInstance == null)
             {
-                s_instance ??= new BufferManager(fileManager, logManager, bufferCount);
+                // Lazy<T> の初期化 (コンストラクタ呼び出し)
+                s_lazyInstance = new Lazy<BufferManager>(
+                    () => new BufferManager(fileManager, logManager, bufferCount)
+                );
             }
+            else // もし初期化済なら、渡された引数は無視
+            {
+                // 必要ならここで警告ログなどを出す
+                Console.WriteLine("Warning: BufferManager is already initialized.");
+            }
+
+            return s_lazyInstance.Value; // 必ず Value が存在する
         }
-        return s_instance;
     }
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
+    private readonly object _lockObject = new();
+
     public void FlushAll(int txNumber)
     {
-        foreach (var buffer in _bufferPool)
+        lock (_lockObject)
         {
-            if (buffer.ModifyingTx == txNumber)
+            foreach (var buffer in _bufferPool)
             {
-                buffer.Flush();
+                if (buffer.ModifyingTx == txNumber)
+                {
+                    buffer.Flush();
+                }
             }
         }
     }
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Unpin(Buffer buffer)
     {
-        buffer.Unpin();
-        if (!buffer.IsPinned)
+        lock (_lockObject)
         {
-            _availableBufferCount++;
-            // NOTE: ここのコードは本当にこれでよいのか？
-            Monitor.PulseAll(this);
+            buffer.Unpin();
+            if (!buffer.IsPinned)
+            {
+                _availableBufferCount++;
+                // NOTE: ここのコードは本当にこれでよいのか？
+                Monitor.PulseAll(_lockObject);
+            }
         }
     }
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public Buffer Pin(BlockId blockId)
     {
-        var stopWatch = new Stopwatch();
-        Buffer? buffer;
-        try
+        lock (_lockObject)
         {
-            stopWatch.Start();
-            buffer = TryToPin(blockId);
-            while (buffer is null && !WaitingTooLong(stopWatch))
+            var stopWatch = new Stopwatch();
+            Buffer? buffer;
+            try
             {
-                Monitor.Wait(this, _MAX_TIME);
+                stopWatch.Start();
                 buffer = TryToPin(blockId);
+                while (buffer is null && !WaitingTooLong(stopWatch))
+                {
+                    Monitor.Wait(_lockObject, MAX_TIME);
+                    buffer = TryToPin(blockId);
+                }
             }
-        }
-        catch (ThreadInterruptedException e)
-        {
-            throw new BufferAbortException(e.Message);
-        }
+            catch (ThreadInterruptedException e)
+            {
+                throw new BufferAbortException(e.Message);
+            }
 
-        return buffer ?? throw new BufferAbortException("No buffer is available.");
+            return buffer ?? throw new BufferAbortException("No buffer is available.");
+        }
     }
 
     private static bool WaitingTooLong(Stopwatch stopWatch)
     {
         var elapsed = stopWatch.ElapsedMilliseconds;
-        return elapsed > _MAX_TIME;
+        return elapsed > MAX_TIME;
     }
 
     private Buffer? TryToPin(BlockId blockId)
@@ -119,15 +137,33 @@ internal sealed class BufferManager : IBufferManager
     private Buffer? ChooseUnpinnedBuffer() =>
         _bufferPool.FirstOrDefault((buffer) => !buffer.IsPinned);
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public int Available() => _availableBufferCount;
-
-    // Static method to reset the instance (useful for testing)
-    public static void ResetInstance()
+    public int Available()
     {
-        lock (Lock)
+        lock (_lockObject)
         {
-            s_instance = null;
+            return _availableBufferCount;
         }
     }
+
+    public void Dispose()
+    {
+        lock (_lockObject)
+        {
+            foreach (var buffer in _bufferPool)
+            {
+                buffer.Dispose();
+            }
+        }
+    }
+
+#if DEBUG
+    // Internal method for resetting the instance ONLY during testing.
+    internal static void ResetInstanceForTesting()
+    {
+        lock (InitLock)
+        {
+            s_lazyInstance = null;
+        }
+    }
+#endif
 }

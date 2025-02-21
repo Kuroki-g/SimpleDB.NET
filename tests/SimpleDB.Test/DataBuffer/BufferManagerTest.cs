@@ -5,7 +5,7 @@ using SimpleDB.Storage;
 
 namespace SimpleDB.Test.DataBuffer;
 
-public class BufferManagerTest
+public class BufferManagerTest : IDisposable
 {
     [Fact]
     public void Available_初期化した場合そのままだとバッファの数だけ利用可能である()
@@ -13,11 +13,12 @@ public class BufferManagerTest
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
         var bufferCount = 3;
-        var bufferManager = new BufferManager(fm, lm, bufferCount);
+        var bufferManager = BufferManager.GetInstance(fm, lm, bufferCount);
 
         var actual = bufferManager.Available();
 
         Assert.Equal(bufferCount, actual);
+        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -26,7 +27,7 @@ public class BufferManagerTest
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
         var bufferCount = 2;
-        var bufferManager = new BufferManager(fm, lm, bufferCount);
+        var bufferManager = BufferManager.GetInstance(fm, lm, bufferCount);
 
         bufferManager.Pin(new BlockId("test-file", 0));
         bufferManager.Pin(new BlockId("test-file", 1));
@@ -34,6 +35,7 @@ public class BufferManagerTest
         var actual = bufferManager.Available();
 
         Assert.Equal(0, actual);
+        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -42,7 +44,7 @@ public class BufferManagerTest
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
         var bufferCount = 2;
-        var bufferManager = new BufferManager(fm, lm, bufferCount);
+        var bufferManager = BufferManager.GetInstance(fm, lm, bufferCount);
 
         bufferManager.Pin(new BlockId("test-file", 0));
         bufferManager.Pin(new BlockId("test-file", 1));
@@ -50,6 +52,7 @@ public class BufferManagerTest
         var actual = Record.Exception(() => bufferManager.Pin(new BlockId("test-file", 2)));
 
         Assert.IsType<BufferAbortException>(actual);
+        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -58,7 +61,7 @@ public class BufferManagerTest
         var fm = A.Fake<IFileManager>();
         var lm = A.Fake<ILogManager>();
         var bufferCount = 1;
-        var bufferManager = new BufferManager(fm, lm, bufferCount);
+        var bufferManager = BufferManager.GetInstance(fm, lm, bufferCount);
 
         var buffer0 = bufferManager.Pin(new BlockId("test-file", 0));
         bufferManager.Unpin(buffer0);
@@ -66,5 +69,12 @@ public class BufferManagerTest
         var actual = bufferManager.Available();
 
         Assert.Equal(1, actual);
+        BufferManager.ResetInstanceForTesting();
+    }
+
+    public void Dispose()
+    {
+        BufferManager.ResetInstanceForTesting();
+        GC.SuppressFinalize(this);
     }
 }

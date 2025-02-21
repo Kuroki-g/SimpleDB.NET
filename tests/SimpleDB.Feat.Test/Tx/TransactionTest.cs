@@ -21,7 +21,7 @@ public class TransactionTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, "log-file");
-        var bm = new BufferManager(fm, lm, 1);
+        var bm = BufferManager.GetInstance(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);
 
@@ -45,7 +45,7 @@ public class TransactionTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, "log-file");
-        var bm = new BufferManager(fm, lm, 1);
+        var bm = BufferManager.GetInstance(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);
 
@@ -76,7 +76,7 @@ public class TransactionTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, "log-file");
-        var bm = new BufferManager(fm, lm, 1);
+        var bm = BufferManager.GetInstance(fm, lm, 1);
 
         var transaction = new Transaction(fm, lm, bm);
 

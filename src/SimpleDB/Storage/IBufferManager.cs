@@ -2,7 +2,7 @@ using Buffer = SimpleDB.DataBuffer.Buffer;
 
 namespace SimpleDB.Storage;
 
-public interface IBufferManager
+public interface IBufferManager : IDisposable
 {
     public Buffer Pin(BlockId blockId);
 

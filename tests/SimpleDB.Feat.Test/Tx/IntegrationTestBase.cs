@@ -85,7 +85,7 @@ public abstract class IntegrationTestBase : IDisposable
             }
         );
         var lm = LogManager.GetInstance(fm, "simpledb.log");
-        var bm = new BufferManager(fm, lm, 8);
+        var bm = BufferManager.GetInstance(fm, lm, 8);
 
         return new Transaction(fm, lm, bm);
     }

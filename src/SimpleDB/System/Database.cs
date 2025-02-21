@@ -38,7 +38,7 @@ public sealed class Database : IDisposable
             }
         );
         Lm = LogManager.GetInstance(Fm, dbConfig.LogFileName);
-        Bm = new BufferManager(Fm, Lm, dbConfig.BufferSize);
+        Bm = BufferManager.GetInstance(Fm, Lm, dbConfig.BufferSize);
 
         BlockSize = dbConfig.BlockSize;
         Mm = new MetadataManager(true, NewTx());
