@@ -32,6 +32,7 @@ public class FileManagerTest : IntegrationTestBase
 
         Assert.Equal(blockSize, manager.BlockSize);
         Assert.False(manager.IsNew);
+        FileManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -54,6 +55,7 @@ public class FileManagerTest : IntegrationTestBase
 
         Assert.Equal(blockSize, manager.BlockSize);
         Assert.True(manager.IsNew);
+        FileManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -73,6 +75,7 @@ public class FileManagerTest : IntegrationTestBase
         var actual = manager.Append(fileName);
 
         Assert.Equal(fileName, actual.FileName);
+        FileManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -88,19 +91,20 @@ public class FileManagerTest : IntegrationTestBase
                 BlockSize = blockSize,
             }
         );
-        Assert.Equal(0, fm.Length(fileName));
+        Assert.Equal(0, fm.GetFileLength(fileName));
 
         var actual0 = fm.Append(fileName);
         Assert.Equal(0, actual0.Number);
-        Assert.Equal(1, fm.Length(fileName));
+        Assert.Equal(1, fm.GetFileLength(fileName));
 
         var actual1 = fm.Append(fileName);
         Assert.Equal(1, actual1.Number);
-        Assert.Equal(2, fm.Length(fileName));
+        Assert.Equal(2, fm.GetFileLength(fileName));
 
         var actual2 = fm.Append(fileName);
         Assert.Equal(2, actual2.Number);
-        Assert.Equal(3, fm.Length(fileName));
+        Assert.Equal(3, fm.GetFileLength(fileName));
+        FileManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -132,6 +136,7 @@ public class FileManagerTest : IntegrationTestBase
 
         Assert.Equal(str, pageToRead.GetString(initialPos));
         Assert.Equal(345, pageToRead.GetInt(pos2));
+        FileManager.ResetInstanceForTesting();
     }
 
     [Fact(Skip = "新規作成し、何もないものを読み込んだ場合のページの取り扱いが不明。")]
@@ -154,5 +159,6 @@ public class FileManagerTest : IntegrationTestBase
         var actual = Record.Exception(() => fm.Read(blockId, new Page([])));
 
         Assert.IsType<SystemException>(actual);
+        FileManager.ResetInstanceForTesting();
     }
 }

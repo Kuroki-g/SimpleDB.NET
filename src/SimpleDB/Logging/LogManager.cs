@@ -76,7 +76,7 @@ internal sealed class LogManager : ILogManager
         var bytes = new byte[fm.BlockSize];
         _logPage = new Page(bytes);
 
-        int logSize = fm.Length(logFile);
+        int logSize = fm.GetFileLength(logFile);
         if (logSize == 0)
         {
             CurrentBlock = AppendNewBlock();

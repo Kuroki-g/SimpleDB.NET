@@ -25,14 +25,11 @@ public interface IFileManager : IDisposable
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public BlockId Append(string fileName);
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Read(BlockId blockId, Page page);
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Write(BlockId blockId, Page page);
 
-    public int Length(string fileName);
+    public int GetFileLength(string fileName);
 }

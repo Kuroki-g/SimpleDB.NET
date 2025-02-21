@@ -149,7 +149,7 @@ public class Transaction : ITransaction, IDisposable
         var dummyBlock = new BlockId(fileName, END_OF_FILE);
         Cm.SharedLock(dummyBlock);
 
-        return Fm.Length(fileName);
+        return Fm.GetFileLength(fileName);
     }
 
     /// <summary>

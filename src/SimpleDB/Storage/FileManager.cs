@@ -1,5 +1,5 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
-using System.Runtime.CompilerServices;
 using Common.Abstractions;
 using Microsoft.Win32.SafeHandles;
 
@@ -7,17 +7,17 @@ namespace SimpleDB.Storage;
 
 internal sealed class FileManager : IFileManager, IDisposable
 {
-    private static FileManager? s_instance;
+    private static Lazy<FileManager>? s_lazyInstance;
 
-    private static readonly object Lock = new();
+    private static readonly object InitLock = new();
 
-    readonly IFileSystem _fileSystem;
+    private readonly IFileSystem _fileSystem;
 
     private readonly IDirectoryInfo _dbDirectory;
 
-    private readonly Dictionary<string, SafeFileHandle> _openFiles = [];
+    private readonly ConcurrentDictionary<string, SafeFileHandle> _openFiles = new(); // ConcurrentDictionary を使用
 
-    internal string[] OpenedFiles => [.. _openFiles.Keys];
+    public string[] OpenedFiles => [.. _openFiles.Keys];
 
     public int BlockSize { get; private set; }
 
@@ -34,7 +34,11 @@ internal sealed class FileManager : IFileManager, IDisposable
     )
     {
         if (blockSize <= 0)
-            throw new InvalidOperationException("block size must be larger than zero");
+            throw new ArgumentOutOfRangeException(
+                nameof(blockSize),
+                "Block size must be larger than zero."
+            );
+
         _fileSystem = fileSystem ?? new FileSystem();
         _randomAccess = randomAccess ?? new RandomAccessWrapper();
         _dbDirectory = _fileSystem.DirectoryInfo.New(dbDirectory);
@@ -47,44 +51,74 @@ internal sealed class FileManager : IFileManager, IDisposable
             _dbDirectory.Create();
         }
 
-        // TODO: 一度に削除するメソッドがあるはず。書き換える。
-        // TODO: ログに出力するようにする。
+        // tempファイルの削除 (より安全な方法)
         foreach (var fileInfo in _dbDirectory.GetFiles())
         {
-            if (fileInfo.Name.StartsWith("temp"))
+            if (IsTemporaryFile(fileInfo)) // 判定メソッド
             {
-                fileInfo.Delete();
+                try
+                {
+                    fileInfo.Delete();
+                    //ログ出力(例)
+                    Console.WriteLine($"Deleted temporary file: {fileInfo.FullName}");
+                }
+                catch (Exception ex)
+                {
+                    //ログ出力(例)
+                    Console.WriteLine(
+                        $"Error deleting temporary file {fileInfo.FullName}: {ex.Message}"
+                    );
+                }
             }
         }
     }
 
-    // Public static method to get the instance
+    /// <summary>
+    /// ここにtempファイルかどうかの判定ロジックを実装。
+    /// 例：ファイル名が"temp"で始まり、かつ、タイムスタンプが付与されている、など。
+    /// </summary>
+    /// <param name="fileInfo"></param>
+    /// <returns></returns>
+    private static bool IsTemporaryFile(IFileInfo fileInfo)
+    {
+        return fileInfo.Name.StartsWith("temp");
+    }
+
     public static FileManager GetInstance(
         FileManagerConfig? config = null,
         IFileSystem? fileSystem = null,
         IRandomAccess? randomAccess = null
     )
     {
-        // DIを使用しない場合は、二重チェックロック
-        if (s_instance == null)
+        lock (InitLock)
         {
-            ArgumentNullException.ThrowIfNull(config);
-            lock (Lock)
+            if (s_lazyInstance == null)
             {
-                if (s_instance == null)
-                {
-                    s_instance ??= new FileManager(
-                        config.DbDirectory,
-                        config.BlockSize,
-                        fileSystem,
-                        randomAccess
-                    );
-                }
+                ArgumentNullException.ThrowIfNull(config);
+                s_lazyInstance = new Lazy<FileManager>(
+                    () =>
+                        new FileManager(
+                            config.DbDirectory,
+                            config.BlockSize,
+                            fileSystem,
+                            randomAccess
+                        )
+                );
             }
+            else if (config != null) // 設定が違う場合
+            {
+                // 警告
+                Console.WriteLine(
+                    "Warning: FileManager already initialized, ignoring configuration changes."
+                );
+            }
+
+            return s_lazyInstance.Value;
         }
-        // すでに存在している場合はディレクトリとブロックサイズの変更は無視する。
-        return s_instance;
     }
+
+    // ファイルごとのロックオブジェクトを管理する ConcurrentDictionary
+    private readonly ConcurrentDictionary<string, object> _fileLocks = new();
 
     /// <summary>
     /// 指定のファイル名のブロックを追加し、初期化する。
@@ -92,105 +126,120 @@ internal sealed class FileManager : IFileManager, IDisposable
     /// <param name="fileName"></param>
     /// <returns></returns>
     /// <exception cref="SystemException"></exception>
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public BlockId Append(string fileName)
     {
-        int newBlockNumber = Length(fileName);
-        var blockId = new BlockId(fileName, newBlockNumber);
-        byte[] bytes = new byte[BlockSize];
-        try
-        {
-            var handle = GetFileHandle(blockId.FileName);
-            RandomAccess.Write(handle, new byte[bytes.Length], blockId.Number * BlockSize);
-        }
-        catch (IOException e)
-        {
-            throw new SystemException(e.Message);
-        }
+        // ファイル名に対応するロックオブジェクトを取得または作成
+        var fileLock = _fileLocks.GetOrAdd(fileName, _ => new object());
 
-        return blockId;
+        lock (fileLock) // ファイル単位でロック
+        {
+            int newBlockNumber = GetFileLength(fileName); //Lengthメソッドを修正
+            var blockId = new BlockId(fileName, newBlockNumber);
+            byte[] bytes = new byte[BlockSize]; // 初期化されたバイト配列
+
+            try
+            {
+                var handle = GetFileHandle(fileName); // SafeFileHandle を取得
+                _randomAccess.Write(handle, bytes, blockId.Number * BlockSize);
+            }
+            catch (IOException e)
+            {
+                throw new SystemException($"Error appending to file {fileName}: {e.Message}", e);
+            }
+
+            return blockId;
+        }
     }
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Read(BlockId blockId, Page page)
     {
-        try
+        var fileLock = _fileLocks.GetOrAdd(blockId.FileName, _ => new object());
+        lock (fileLock)
         {
-            var handle = GetFileHandle(blockId.FileName);
-            var bytes = new byte[BlockSize];
-            var buffer = new Span<byte>(bytes);
-            _randomAccess.Read(handle, buffer, blockId.Number * BlockSize);
-            page.SetContents(buffer);
-        }
-        catch (IOException e)
-        {
-            throw new SystemException(e.Message, e);
+            try
+            {
+                var handle = GetFileHandle(blockId.FileName);
+                var bytes = new byte[BlockSize];
+                _randomAccess.Read(handle, bytes, blockId.Number * BlockSize);
+                page.SetContents(bytes);
+            }
+            catch (IOException e)
+            {
+                throw new SystemException(
+                    $"Error reading block {blockId.Number} from file {blockId.FileName}: {e.Message}",
+                    e
+                );
+            }
         }
     }
 
-    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Write(BlockId blockId, Page page)
     {
-        try
+        var fileLock = _fileLocks.GetOrAdd(blockId.FileName, _ => new object());
+        lock (fileLock)
         {
-            var handle = GetFileHandle(blockId.FileName);
-            _randomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
-        }
-        catch (IOException e)
-        {
-            throw new SystemException(e.Message, e);
+            try
+            {
+                var handle = GetFileHandle(blockId.FileName);
+                _randomAccess.Write(handle, page.Contents(), blockId.Number * BlockSize);
+            }
+            catch (IOException e)
+            {
+                throw new SystemException(
+                    $"Error writing to block {blockId.Number} in file {blockId.FileName}: {e.Message}",
+                    e
+                );
+            }
         }
     }
 
-    public int Length(string fileName)
+    // SafeFileHandle を利用してファイル長を取得するメソッド (GetFileHandle からの呼び出し専用)
+    public int GetFileLength(string fileName)
     {
         var handle = GetFileHandle(fileName) ?? throw new IOException($"cannot access {fileName}");
         return (int)(_randomAccess.GetLength(handle) / BlockSize);
     }
 
-    /// <summary>
-    /// Get handle or add new
-    /// WARNING: do not forget to dispose this handle
-    /// </summary>
-    /// <param name="fileName"></param>
-    /// <returns></returns>
+    // SafeFileHandle を取得/管理するメソッド
     private SafeFileHandle GetFileHandle(string fileName)
     {
-        SafeFileHandle? handle = _openFiles.GetValueOrDefault(fileName) ?? null;
-        if (handle is not null)
-        {
-            if (handle.IsClosed) // handleが閉じられている場合にはアクセスできないので再度開く
+        return _openFiles.AddOrUpdate(
+            fileName,
+            _ => CreateFileHandle(fileName),
+            (_, existingHandle) =>
             {
-                _openFiles.Remove(fileName);
-                return GetFileHandle(fileName);
+                if (existingHandle.IsClosed)
+                {
+                    existingHandle.Dispose();
+                    return CreateFileHandle(fileName);
+                }
+                return existingHandle;
             }
-            return handle;
-        }
-        var info = _fileSystem.FileInfo.New(
-            _fileSystem.Path.Combine(_dbDirectory.FullName, fileName)
         );
-        handle = CreateOrSelectFileAndOpenHandle(info, access: FileAccess.ReadWrite);
-        _openFiles[fileName] = handle;
-        return handle;
+    }
+
+    private SafeFileHandle CreateFileHandle(string fileName)
+    {
+        var filePath = _fileSystem.Path.Combine(_dbDirectory.FullName, fileName);
+        var fileInfo = _fileSystem.FileInfo.New(filePath);
+        return CreateOrSelectFileAndOpenHandle(fileInfo, access: FileAccess.ReadWrite);
     }
 
     private static SafeFileHandle CreateOrSelectFileAndOpenHandle(
         IFileInfo info,
-        FileMode mode = FileMode.Open,
-        FileAccess access = FileAccess.Read,
-        FileShare share = FileShare.Read,
+        FileMode mode = FileMode.OpenOrCreate, // OpenOrCreate に変更
+        FileAccess access = FileAccess.ReadWrite,
+        FileShare share = FileShare.Read, // 他のプロセスからの読み取りを許可
         FileOptions options = FileOptions.None,
         long preallocationSize = 0
     )
     {
+        // ディレクトリが存在しない場合は例外ではなく、作成するように変更
         if (!Directory.Exists(info.DirectoryName))
         {
-            throw new FileNotFoundException(
-                "cannot use this method for mock. please check you are using real file system."
-            );
+            Directory.CreateDirectory(info.DirectoryName!);
         }
-        var fs = info.Exists ? info.Open(FileMode.Open) : info.Create();
-        fs.Close();
+
         return File.OpenHandle(info.FullName, mode, access, share, options, preallocationSize);
     }
 
@@ -209,24 +258,34 @@ internal sealed class FileManager : IFileManager, IDisposable
         {
             if (disposing)
             {
-                // Dispose managed resources (if any)
-                foreach (var pair in _openFiles)
+                foreach (var handle in _openFiles.Values)
                 {
-                    pair.Value.Dispose();
+                    handle.Dispose();
                 }
                 _openFiles.Clear();
             }
-
-            // Release unmanaged resources (if any)
-            // (none in this case)
-
             _disposed = true;
         }
     }
 
-    // Finalizer (if needed)
     ~FileManager()
     {
         Dispose(false);
     }
+
+#if DEBUG
+    // テスト用にインスタンスをリセットするメソッド
+    internal static void ResetInstanceForTesting()
+    {
+        lock (InitLock)
+        {
+            if (s_lazyInstance != null)
+            {
+                s_lazyInstance.Value.Dispose(); // 現在のインスタンスを破棄
+                s_lazyInstance = null; // インスタンスを null にリセット
+            }
+        }
+    }
+
+#endif
 }
