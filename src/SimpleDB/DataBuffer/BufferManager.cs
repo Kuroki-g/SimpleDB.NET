@@ -149,8 +149,8 @@ internal sealed class BufferManager : SingletonBase<BufferManager>, IBufferManag
     /// Internal method for resetting the instance ONLY during testing.
     /// </summary>
     [Conditional("DEBUG")]
-    internal static void ResetInstanceForTesting()
+    internal static new void InitializeInstance()
     {
-        InitializeInstance(); // SingletonBase のメソッドを呼び出す
+        SingletonBase<BufferManager>.InitializeInstance();
     }
 }

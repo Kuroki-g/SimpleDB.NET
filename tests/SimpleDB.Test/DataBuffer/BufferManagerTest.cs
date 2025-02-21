@@ -18,7 +18,6 @@ public class BufferManagerTest : IDisposable
         var actual = bufferManager.Available();
 
         Assert.Equal(bufferCount, actual);
-        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -35,7 +34,6 @@ public class BufferManagerTest : IDisposable
         var actual = bufferManager.Available();
 
         Assert.Equal(0, actual);
-        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -52,7 +50,6 @@ public class BufferManagerTest : IDisposable
         var actual = Record.Exception(() => bufferManager.Pin(new BlockId("test-file", 2)));
 
         Assert.IsType<BufferAbortException>(actual);
-        BufferManager.ResetInstanceForTesting();
     }
 
     [Fact]
@@ -69,12 +66,11 @@ public class BufferManagerTest : IDisposable
         var actual = bufferManager.Available();
 
         Assert.Equal(1, actual);
-        BufferManager.ResetInstanceForTesting();
     }
 
     public void Dispose()
     {
-        BufferManager.ResetInstanceForTesting();
+        BufferManager.InitializeInstance();
         GC.SuppressFinalize(this);
     }
 }
