@@ -1,19 +1,17 @@
 using System.Diagnostics;
+using Common;
 using SimpleDB.Logging;
 using SimpleDB.Storage;
 
 namespace SimpleDB.DataBuffer;
 
-internal sealed class BufferManager : IBufferManager
+internal sealed class BufferManager : SingletonBase<BufferManager>, IBufferManager
 {
     private readonly List<Buffer> _bufferPool;
 
     private int _availableBufferCount;
 
     private static readonly int MAX_TIME = 1000; // 1 seconds
-
-    // Singleton instance using Lazy<T>
-    private static Lazy<BufferManager>? s_lazyInstance;
 
     private BufferManager(IFileManager fileManager, ILogManager logManager, int bufferCount)
     {
@@ -25,31 +23,24 @@ internal sealed class BufferManager : IBufferManager
         }
     }
 
-    private static readonly object InitLock = new(); // 初期化時のロック用
-
+    // GetInstance は Instance プロパティを使うように変更 (引数を受け取るように変更)
     public static BufferManager GetInstance(
         IFileManager fileManager,
         ILogManager logManager,
         int bufferCount
     )
     {
-        lock (InitLock) // 排他制御
+        if (!HasInstance)
         {
-            if (s_lazyInstance == null)
-            {
-                // Lazy<T> の初期化 (コンストラクタ呼び出し)
-                s_lazyInstance = new Lazy<BufferManager>(
-                    () => new BufferManager(fileManager, logManager, bufferCount)
-                );
-            }
-            else // もし初期化済なら、渡された引数は無視
-            {
-                // 必要ならここで警告ログなどを出す
-                Console.WriteLine("Warning: BufferManager is already initialized.");
-            }
-
-            return s_lazyInstance.Value; // 必ず Value が存在する
+            InitializeInstance(() => new BufferManager(fileManager, logManager, bufferCount)); // Lazy<T> の初期化
         }
+        else
+        {
+            // 必要ならここで警告ログなどを出す
+            Console.WriteLine("Warning: BufferManager is already initialized.");
+        }
+
+        return Instance;
     }
 
     private readonly object _lockObject = new();
@@ -76,7 +67,6 @@ internal sealed class BufferManager : IBufferManager
             if (!buffer.IsPinned)
             {
                 _availableBufferCount++;
-                // NOTE: ここのコードは本当にこれでよいのか？
                 Monitor.PulseAll(_lockObject);
             }
         }
@@ -155,14 +145,12 @@ internal sealed class BufferManager : IBufferManager
         }
     }
 
-#if DEBUG
-    // Internal method for resetting the instance ONLY during testing.
+    /// <summary>
+    /// Internal method for resetting the instance ONLY during testing.
+    /// </summary>
+    [Conditional("DEBUG")]
     internal static void ResetInstanceForTesting()
     {
-        lock (InitLock)
-        {
-            s_lazyInstance = null;
-        }
+        InitializeInstance(); // SingletonBase のメソッドを呼び出す
     }
-#endif
 }
