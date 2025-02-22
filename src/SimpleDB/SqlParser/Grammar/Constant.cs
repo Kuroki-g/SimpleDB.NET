@@ -51,4 +51,11 @@ public class Constant : IComparable
             : _isString ? _stringValue!.CompareTo(constant._stringValue)
             : throw new InvalidDataException();
     }
+
+    public override string? ToString()
+    {
+        return _isInt ? _intValue!.ToString()
+            : _isString ? _stringValue!
+            : throw new InvalidDataException();
+    }
 }
