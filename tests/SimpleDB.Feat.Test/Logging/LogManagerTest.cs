@@ -79,8 +79,8 @@ public class LogManagerTest : IntegrationTestBase
         Assert.Equal(1, lsn);
     }
 
-    [Fact(Skip = "TODO")]
-    public void Append_multiple_time()
+    [Fact]
+    public void Append_multiple_time_throws_no_error()
     {
         var fileName = "log-file";
         var fm = FileManager.GetInstance(
@@ -92,17 +92,23 @@ public class LogManagerTest : IntegrationTestBase
             }
         );
         var lm = LogManager.GetInstance(fm, fileName);
-        for (int i = 0; i < 100; i++)
+
+        void Fn()
         {
-            var logRecord = LoggingTestHelper.CreateLogRecord($"record{i}", i);
-            var lsn = lm.Append(logRecord);
+            for (int i = 0; i < 100; i++)
+            {
+                var logRecord = LoggingTestHelper.CreateLogRecord($"record{i}", i);
+                lm.Append(logRecord);
+            }
         }
 
-        Assert.Equal(1, lm.CurrentBlock.Number);
+        var actual = Record.Exception(Fn);
+
+        Assert.Null(actual);
     }
 
     [Fact]
-    public void GetEnumerator_empty_file()
+    public void GetEnumerator_empty_file_returns_no_records()
     {
         var fileName = "log-file";
         var fm = FileManager.GetInstance(
@@ -121,8 +127,8 @@ public class LogManagerTest : IntegrationTestBase
         Assert.Empty(actual);
     }
 
-    [Fact(Skip = "TODO")]
-    public void CreateSample_GetRecords()
+    [Fact]
+    public void LogManager_can_write_and_get_log_records()
     {
         var fileName = "log-file";
         var fm = FileManager.GetInstance(
@@ -136,12 +142,14 @@ public class LogManagerTest : IntegrationTestBase
 
         var lm = LogManager.GetInstance(fm, fileName);
 
-        var actual = LoggingTestHelper.CreateSampleLogRecords(lm, 1, 35);
-        var actual2 = LoggingTestHelper.CreateSampleLogRecords(lm, 36, 70);
-        lm.Flush(65);
+        var created1 = LoggingTestHelper.CreateSampleLogRecords(lm, 1, 35);
+        var actual1 = LoggingTestHelper.GetLogRecords(lm);
 
-        var actual3 = LoggingTestHelper.GetLogRecords(lm);
+        Assert.Equal(created1.Count, actual1.Count);
 
-        Assert.Empty(actual3);
+        var created2 = LoggingTestHelper.CreateSampleLogRecords(lm, 36, 80);
+        var actual2 = LoggingTestHelper.GetLogRecords(lm);
+
+        Assert.Equal(created1.Count + created2.Count, actual2.Count);
     }
 }
