@@ -43,6 +43,7 @@ public abstract class IntegrationTestBase : IDisposable
         GC.SuppressFinalize(this);
         ResetFileManagerSingleton();
         ResetLogManagerSingleton();
+        BufferManager.InitializeInstance();
         Helper.Delete(_dir);
     }
 

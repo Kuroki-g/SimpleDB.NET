@@ -17,7 +17,7 @@ public class MetadataManager : IMetadataManager
     {
         s_tableManager = new TableManager(isNew, tx);
         s_viewManager = new ViewManager(isNew, s_tableManager, tx);
-        s_statManager = new StatManager(s_tableManager, tx);
+        s_statManager = StatManager.GetInstance(s_tableManager, tx);
         s_indexManager = new IndexManager(isNew, s_tableManager, s_statManager, tx);
     }
 

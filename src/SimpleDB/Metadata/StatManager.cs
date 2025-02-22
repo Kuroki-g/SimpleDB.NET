@@ -1,10 +1,11 @@
 using System.Runtime.CompilerServices;
+using Common;
 using SimpleDB.Structure;
 using SimpleDB.Tx;
 
 namespace SimpleDB.Metadata;
 
-internal sealed class StatManager : IStatManager
+internal sealed class StatManager : SingletonBase<StatManager>, IStatManager
 {
     private static readonly int REFRESH_THRESHOLD = 100;
 
@@ -14,10 +15,25 @@ internal sealed class StatManager : IStatManager
 
     private Dictionary<string, StatInfo> _tableStats = [];
 
-    public StatManager(ITableManager tableManager, ITransaction tx)
+    private StatManager(ITableManager tableManager, ITransaction tx)
     {
         _tableManager = tableManager;
         RefreshStat(tx);
+    }
+
+    public static StatManager GetInstance(ITableManager tableManager, ITransaction tx)
+    {
+        if (!HasInstance)
+        {
+            InitializeInstance(() => new StatManager(tableManager, tx));
+        }
+        else
+        {
+            // 必要ならここで警告ログなどを出す
+            Console.WriteLine("Warning: StatManager is already initialized.");
+        }
+
+        return Instance;
     }
 
     public StatInfo GetStatInfo(string tableName, Layout layout, ITransaction tx)

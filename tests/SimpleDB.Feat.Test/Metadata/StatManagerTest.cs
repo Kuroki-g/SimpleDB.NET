@@ -11,7 +11,7 @@ public class StatManagerTest : IntegrationTestBase
     {
         var (tm, tx) = CreateTableManager();
 
-        var statManager = new StatManager(tm, tx);
+        var statManager = StatManager.GetInstance(tm, tx);
 
         Assert.NotNull(statManager);
     }
@@ -23,7 +23,7 @@ public class StatManagerTest : IntegrationTestBase
         var schema = CreateSchema();
         tm.CreateTable("SampleTable", schema, tx);
 
-        var statManager = new StatManager(tm, tx);
+        var statManager = StatManager.GetInstance(tm, tx);
 
         Assert.NotNull(statManager);
     }
@@ -40,7 +40,7 @@ public class StatManagerTest : IntegrationTestBase
         ts.SetInt("A", 1);
         ts.Close();
 
-        var sm = new StatManager(tm, tx);
+        var sm = StatManager.GetInstance(tm, tx);
         var actual = sm.GetStatInfo("SampleTable", layout, tx);
 
         // Block数は別途入れている数に依存し、算出に手間がかかるので、とりあえず1増える分だけ入れている。
