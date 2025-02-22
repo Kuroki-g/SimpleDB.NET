@@ -11,11 +11,11 @@ public sealed class Database : IDisposable
 {
     public readonly int BlockSize;
 
-    internal readonly IFileManager Fm;
+    private readonly IFileManager _fm;
 
-    internal readonly ILogManager Lm;
+    private readonly ILogManager _lm;
 
-    internal readonly IBufferManager Bm;
+    private readonly IBufferManager _bm;
 
     internal readonly IMetadataManager Mm;
 
@@ -29,7 +29,7 @@ public sealed class Database : IDisposable
     /// <param name="dbConfig"></param>
     internal Database(ISimpleDbConfig dbConfig)
     {
-        Fm = FileManager.GetInstance(
+        _fm = FileManager.GetInstance(
             new FileManagerConfig()
             {
                 DbDirectory = dbConfig.FileName,
@@ -37,8 +37,8 @@ public sealed class Database : IDisposable
                 BlockSize = dbConfig.BlockSize,
             }
         );
-        Lm = LogManager.GetInstance(Fm, dbConfig.LogFileName);
-        Bm = BufferManager.GetInstance(Fm, Lm, dbConfig.BufferSize);
+        _lm = LogManager.GetInstance(_fm, dbConfig.LogFileName);
+        _bm = BufferManager.GetInstance(_fm, _lm, dbConfig.BufferSize);
 
         BlockSize = dbConfig.BlockSize;
         Mm = new MetadataManager(true, NewTx());
@@ -47,12 +47,12 @@ public sealed class Database : IDisposable
 
     public Database(ISimpleDbConfig dbConfig, IFileManager fm, ILogManager lm, IBufferManager bm)
     {
-        Fm = fm;
-        Lm = lm;
-        Bm = bm;
+        _fm = fm;
+        _lm = lm;
+        _bm = bm;
 
         using var tx = NewTx();
-        var isNew = Fm.IsNew;
+        var isNew = _fm.IsNew;
         if (isNew)
         {
             Console.WriteLine("creating new database");
@@ -81,7 +81,7 @@ public sealed class Database : IDisposable
 
     public ITransaction NewTx()
     {
-        return new Transaction(Fm, Lm, Bm);
+        return new Transaction(_fm, _lm, _bm);
     }
 
     public void Dispose()
@@ -96,18 +96,9 @@ public sealed class Database : IDisposable
         {
             if (disposing)
             {
-                if (Bm is IDisposable disposable_bm)
-                {
-                    disposable_bm.Dispose();
-                }
-                if (Lm is IDisposable disposable_lm)
-                {
-                    disposable_lm.Dispose();
-                }
-                if (Fm is IDisposable disposable_fm)
-                {
-                    disposable_fm.Dispose();
-                }
+                _bm.Dispose();
+                _lm.Dispose();
+                _fm.Dispose();
             }
 
             IsDisposed = true;
