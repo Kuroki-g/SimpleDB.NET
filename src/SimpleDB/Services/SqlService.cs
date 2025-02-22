@@ -9,7 +9,7 @@ public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql
     private readonly Database _db = db;
     private readonly ILogger<SqlService> _logger = logger;
 
-    public override Task<SqlResponse> CreateCommand(SqlRequest request, ServerCallContext context)
+    public override Task<SqlResponse> ExecuteQuery(SqlRequest request, ServerCallContext context)
     {
         _logger.LogInformation("Command: {Command}", request.Command);
         var tx = _db.NewTx();
@@ -22,6 +22,18 @@ public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql
         }
         _logger.LogInformation("Received request: {Command}", request.Command);
         tx.Commit();
-        return base.CreateCommand(request, context);
+        return base.ExecuteQuery(request, context);
+    }
+
+    public override Task<SqlResponse> ExecuteUpdateCmd(
+        SqlRequest request,
+        ServerCallContext context
+    )
+    {
+        _logger.LogInformation("Command: {Command}", request.Command);
+        var tx = _db.NewTx();
+        // todo: とりあえずqueryのみ実行可能にしている
+        var result = _db.Planner.ExecuteUpdateCmd(request.Command, tx);
+        return Task.FromResult(new SqlResponse { Message = $"Result: {result}" });
     }
 }

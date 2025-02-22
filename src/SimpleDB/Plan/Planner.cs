@@ -31,6 +31,7 @@ public class Planner(IQueryPlanner queryPlanner, IUpdatePlanner commandPlanner)
     /// <returns></returns>
     public int ExecuteUpdateCmd(string cmd, ITransaction tx)
     {
+        Console.WriteLine($"ExecuteUpdateCmd: {cmd}");
         var parser = new Parser(cmd);
         var updateCmd = parser.UpdateCmd();
         VerifyUpdateCmd(updateCmd);
