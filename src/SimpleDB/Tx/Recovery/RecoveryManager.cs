@@ -6,6 +6,10 @@ using Buffer = SimpleDB.DataBuffer.Buffer;
 
 namespace SimpleDB.Tx.Recovery;
 
+/// <summary>
+/// これはトランザクションに対して、1対1で存在する。
+/// 番号を記載するため、Singletonではない。
+/// </summary>
 public class RecoveryManager : IRecoveryManager
 {
     private readonly int _txNum;
