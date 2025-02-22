@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Grpc.Core;
 using SimDbGrpc;
 using SimpleDB.System;
@@ -16,13 +17,26 @@ public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql
         // todo: とりあえずqueryのみ実行可能にしている
         var plan = _db.Planner.CreatePlan(request.Command, tx);
         var scan = plan.Open();
+        var schema = plan.Schema;
+        _logger.LogInformation("Schema: {Schema}", schema);
+        var results = new List<Dictionary<string, string>>();
         while (scan.Next())
         {
-            _logger.LogInformation("record: {Record}", scan.ToString());
+            results.Add(
+                schema.Fields.ToDictionary(
+                    field => field,
+                    field => scan.GetValue(field).ToString() ?? ""
+                )
+            );
         }
         _logger.LogInformation("Received request: {Command}", request.Command);
         tx.Commit();
-        return base.ExecuteQuery(request, context);
+        string jsonString = JsonSerializer.Serialize(
+            results,
+            new JsonSerializerOptions { WriteIndented = true }
+        ); // 見やすくインデント
+
+        return Task.FromResult(new SqlResponse { Message = $"Result: {jsonString}" });
     }
 
     public override Task<SqlResponse> ExecuteUpdateCmd(
@@ -34,6 +48,7 @@ public class SqlService(Database db, ILogger<SqlService> logger) : SimDbGrpc.Sql
         var tx = _db.NewTx();
         // todo: とりあえずqueryのみ実行可能にしている
         var result = _db.Planner.ExecuteUpdateCmd(request.Command, tx);
+        tx.Commit();
         return Task.FromResult(new SqlResponse { Message = $"Result: {result}" });
     }
 }
