@@ -1,7 +1,4 @@
-using FakeItEasy;
 using SimpleDB.DataBuffer;
-using SimpleDB.Logging;
-using SimpleDB.Storage;
 
 namespace SimpleDB.Test.DataBuffer;
 
@@ -10,12 +7,12 @@ public class BufferAbortExceptionTest
     [Fact]
     public void Constructor()
     {
-        static void func()
+        static void Func()
         {
             throw new BufferAbortException();
         }
 
-        var actual = Record.Exception(func);
+        var actual = Record.Exception(Func);
 
         Assert.IsType<BufferAbortException>(actual);
     }
@@ -23,12 +20,12 @@ public class BufferAbortExceptionTest
     [Fact]
     public void Constructor_with_message()
     {
-        static void func()
+        static void Func()
         {
             throw new BufferAbortException("message");
         }
 
-        var actual = Record.Exception(func);
+        var actual = Record.Exception(Func);
 
         Assert.Equal("message", actual.Message);
     }
